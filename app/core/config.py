@@ -9,14 +9,20 @@ class Settings(BaseSettings):
 
     DEBUG:bool = False
 
+    REDIS_URL:str
+
     POSTGRES_USERNAME:str
     POSTGRES_PASSWORD:str
     POSTGRES_DB:str
     POSTGRES_PORT:int
     POSTGRES_HOST:str
     DATABASE_URL:str
-# POSTGRES_HOST = "localhost" #Local
-# POSTGRES_HOST = "db.xxxx.supabase.co" #Production
+
+    TAVILY_API_KEY:str
+    SERPER_API_KEY:str
+    FIRECRAWL_API_KEY:str
+
+
     
     model_config = SettingsConfigDict(
         env_file = ".env",
