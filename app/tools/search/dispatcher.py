@@ -11,7 +11,7 @@ from app.tools.search.providers.serper_provider import SerperProvider
 from app.tools.search.providers.duckduckgo_provider import DuckDuckGoProvider
 from app.tools.usage_tracker import ProviderUsageTracker
 
-
+MAX_RESULTS_SEARCH :int = 15
 class SearchDispatcher:
     """
     Dispatches search requests across providers based on Redis credit usage.
@@ -70,7 +70,7 @@ class SearchDispatcher:
         )
         return self._ddg
 
-    async def search(self, query: str, max_results: int = 5) -> SearchResults:
+    async def search(self, query: str, max_results: int = MAX_RESULTS_SEARCH) -> SearchResults:
         provider = await self._pick_provider()
         results = await provider.search(query, max_results)
 
