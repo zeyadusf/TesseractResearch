@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     SERPER_API_KEY:str
     FIRECRAWL_API_KEY:str
 
+    STRIP_IMAGES:bool = True
+    
+    OPENAI_API_KEY:str
+    HUGGINGFACEHUB_API_TOKEN:str
 
     
     model_config = SettingsConfigDict(
