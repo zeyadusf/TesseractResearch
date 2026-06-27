@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     
     OPENAI_API_KEY:str
     HUGGINGFACEHUB_API_TOKEN:str
-
+    GROQ_API_KEY:str
     
     model_config = SettingsConfigDict(
         env_file = ".env",
