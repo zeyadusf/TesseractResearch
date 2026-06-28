@@ -30,7 +30,7 @@ class ReportRepository:
         self.db.add(report)
         await self.db.flush()
         await self.db.refresh(report)
-        logger.info(f"Report created for session: {session_id}")
+        logger.debug(f"Report created for session: {session_id}")
         return report
 
     async def get_by_session_id(self, session_id: uuid.UUID) -> Reports | None:
