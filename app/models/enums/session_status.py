@@ -9,4 +9,4 @@ class SessionStatus(str, Enum):
     WAITING_APPROVAL = "awaiting_approval"
     FAILED = "failed"
     CANCELLED = "cancelled"
-    DONE = "done"
+    COMPLETED = "completed"
