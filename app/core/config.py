@@ -22,7 +22,10 @@ class Settings(BaseSettings):
     SERPER_API_KEY:str
     FIRECRAWL_API_KEY:str
 
+    SEARCH_MAX_RESULTS:int = 15
     STRIP_IMAGES:bool = True
+    SCRAPER_TARGET_SOURCES:int=5
+    MAX_CHARS_PER_SOURCE:int=16000
     
     OPENAI_API_KEY:str
     HUGGINGFACEHUB_API_TOKEN:str
