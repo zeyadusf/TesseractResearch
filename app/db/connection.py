@@ -8,7 +8,7 @@ postgres_conn = (
     f'postgresql+asyncpg://{config.POSTGRES_USERNAME}:'
     f'{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:'
     f'{config.POSTGRES_PORT}/{config.POSTGRES_DB}'
-    f'?ssl=require'
+    f'?ssl=disable'
 )
 
 engine = create_async_engine(

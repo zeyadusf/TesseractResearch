@@ -39,8 +39,8 @@ class ProviderUsageTracker:
         self.hard_threshold = int(monthly_limit * hard_threshold_pct)
 
         self._redis = aioredis.from_url(config.REDIS_URL,
-                                            decode_responses=True,
-                                            ssl_cert_reqs=None,  )
+                                            decode_responses=True,)
+                                            # ssl_cert_reqs=None,  )
         
         self.logger = get_logger(f"UsageTracker.{provider_name}")
 
