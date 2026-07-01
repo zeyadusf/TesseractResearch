@@ -38,9 +38,16 @@ class ProviderUsageTracker:
         self.soft_threshold = int(monthly_limit * soft_threshold_pct)
         self.hard_threshold = int(monthly_limit * hard_threshold_pct)
 
-        self._redis = aioredis.from_url(config.REDIS_URL,
-                                            decode_responses=True,)
-                                            # ssl_cert_reqs=None,  )
+        self._redis = aioredis.from_url(
+            config.REDIS_URL,
+            decode_responses=True,
+            health_check_interval=30,      # يبعت PING دوري لو الاتصال idle، يكتشف الموت بدري
+            socket_keepalive=True,          # TCP keepalive على مستوى OS
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            retry_on_timeout=True,          # يعيد المحاولة تلقائيًا لو التايم آوت حصل على operation
+            retry_on_error=[aioredis.ConnectionError, aioredis.TimeoutError],
+        )
         
         self.logger = get_logger(f"UsageTracker.{provider_name}")
 

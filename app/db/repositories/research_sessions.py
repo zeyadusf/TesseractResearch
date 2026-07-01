@@ -29,7 +29,7 @@ class SessionRepository:
             status="running",
         )
         self.db.add(session)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(session)
         logger.info(f"Session created: {session.id}")
         return session
@@ -40,14 +40,23 @@ class SessionRepository:
         )
         return result.scalar_one_or_none()
 
-    async def update_status(self, session_id: uuid.UUID, status: str) -> None:
-        await self.db.execute(
+    async def update_status(self, session_id: uuid.UUID, status: str) -> Sessions | None:
+        result = await self.db.execute(
             update(Sessions)
             .where(Sessions.id == session_id)
             .values(
                 status=status,
                 updated_at=datetime.now(timezone.utc),
             )
+            .returning(Sessions)
         )
-        await self.db.commit()
+        await self.db.flush()
+
+        updated = result.scalar_one_or_none()
+
+        if updated is None:
+            logger.warning(f"Session {session_id} not found — update skipped")
+            return None
+
         logger.info(f"Session {session_id} status → {status}")
+        return updated
