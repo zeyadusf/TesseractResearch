@@ -13,6 +13,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from langsmith import Client as LangSmithClient
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -28,13 +29,13 @@ settings = get_setting()
 logger = get_logger("Main")
 
 limiter = Limiter(key_func=get_remote_address)
+langsmith_client = LangSmithClient()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting TesseractResearch API", extra={"version": settings.APP_VERSION})
 
-    # ctx هو اللي عنده __aexit__ — محتاجينه للـ shutdown
     checkpointer, ctx = await create_checkpointer()
 
     try:
@@ -47,6 +48,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
 
     finally:
+        logger.info("Shutting down — flushing LangSmith traces")
+        langsmith_client.flush()
+
         logger.info("Shutting down — closing checkpointer")
         await ctx.__aexit__(None, None, None)
 

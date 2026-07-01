@@ -14,6 +14,16 @@ Architecture notes:
   - start_research() blocks until the graph hits the approval interrupt
   - approve() blocks until the graph runs to completion
   - Caller (router) owns commit/rollback; service only flushes
+
+Tracing notes:
+  - LangSmith's automatic env-var-based tracer auto-detection is broken
+    in the current langsmith/langchain-core version combo installed in
+    this project (auto-detection silently fails inside langchain_core's
+    _configure(), swallowed via the stdlib `logging` module, invisible
+    in our loguru-based logs). We work around this by passing a
+    LangChainTracer explicitly via config["callbacks"] on every
+    graph.ainvoke() call instead of relying on LANGSMITH_TRACING=true
+    auto-detection.
 """
 
 from __future__ import annotations
@@ -21,6 +31,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, Any
 
+from langchain_core.tracers import LangChainTracer
 from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +48,12 @@ if TYPE_CHECKING:
 
 settings = get_setting()
 logger = get_logger(__name__)
+
+# Explicit LangChainTracer — bypasses the broken env-var auto-detection.
+# Created once at module load; safe to share across requests since
+# LangChainTracer itself is stateless per-invocation (each call gets its
+# own run tree from the config passed to ainvoke()).
+_tracer = LangChainTracer(project_name=settings.LANGSMITH_PROJECT)
 
 
 class ResearchService:
@@ -144,7 +161,12 @@ class ResearchService:
             Re-raises any error from graph execution or report persistence.
         """
         decision = "approved" if approved else "rejected"
-        config = {"configurable": {"thread_id": session_id}}
+        config = {
+            "configurable": {"thread_id": session_id},
+            "run_name": f"research-resume-{session_id}",
+            "tags": ["tesseract-research"],
+            "callbacks": [_tracer],
+        }
 
         logger.info(
             "Resuming graph after HITL",
@@ -226,9 +248,12 @@ class ResearchService:
 
         On any exception before the interrupt we mark the session as failed.
         """
-        config = {"configurable": {"thread_id": session_id},
-                    "run_name": f"research-{session_id}",
-                    "tags": ["tesseract-research"],}
+        config = {
+            "configurable": {"thread_id": session_id},
+            "run_name": f"research-{session_id}",
+            "tags": ["tesseract-research"],
+            "callbacks": [_tracer],
+        }
         try:
             await self._graph.ainvoke(initial_state, config=config)
             # ainvoke() returns here when the graph hits interrupt().

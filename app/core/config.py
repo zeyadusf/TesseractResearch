@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY:str
     HUGGINGFACEHUB_API_TOKEN:str
     GROQ_API_KEY:str
+
+    LANGSMITH_TRACING:bool=True
+    LANGSMITH_API_KEY:str
+    LANGSMITH_PROJECT:str="tesseract-research"
+    LANGSMITH_ENDPOINT:str="https://api.smith.langchain.com"
     
     model_config = SettingsConfigDict(
         env_file = ".env",
