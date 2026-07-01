@@ -4,10 +4,10 @@ Abstract base class for all search providers.
 """
 from app.core.logging import get_logger
 from app.core.config import get_setting
-
-from abc import ABC, abstractmethod
 from app.models.search_tool import SearchResults
 
+from abc import ABC, abstractmethod
+from langsmith import traceable
 
 class BaseSearchProvider(ABC):
 
@@ -25,6 +25,7 @@ class BaseSearchProvider(ABC):
     def is_returns_score(self) -> bool:
         pass
 
+    @traceable(name="searcher", run_type="tool")
     async def search(self, query: str, max_results: int = 5) -> SearchResults:
         """
         Public method — handles logging and error handling.

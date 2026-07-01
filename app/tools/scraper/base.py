@@ -4,6 +4,7 @@ Abstract base class for all scraper providers.
 """
 
 from abc import ABC, abstractmethod
+from langsmith import traceable
 
 from app.models.scraper_tool import ScrapeResult
 from app.core.config import get_setting
@@ -14,7 +15,8 @@ class BaseScraperProvider(ABC):
     def __init__(self):
         self.logger = get_logger(self.__class__.__module__)
         self.config = get_setting()
-
+    
+    @traceable(name="scraper", run_type="tool")
     async def scrape(self, url: str) -> ScrapeResult:
         """
         Public method — handles logging and error handling.
