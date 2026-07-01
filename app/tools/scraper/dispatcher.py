@@ -79,6 +79,7 @@ class ScraperDispatcher:
             f"trying fallback chain..."
         )
         if self._bs4 == None : self._bs4 = BS4Provider()
+        if self._jina == None : self._jina =JinaProvider()
 
         for fallback in [self._jina, self._bs4]:
             if fallback is provider:
