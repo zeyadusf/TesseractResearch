@@ -53,6 +53,7 @@ class SessionStateResponse(BaseModel):
     status: str
     approval_required: bool
     errors: list[str]
+    sources: list[dict] | None = None
 
 
 class ApproveRequest(BaseModel):
@@ -112,7 +113,7 @@ async def get_session_state(
     session_id: str,
     service: ResearchService = Depends(get_research_service),
 ) -> SessionStateResponse:
-    """Returns current_step, status, approval_required, and any errors."""
+    """Returns current_step, status, approval_required, errors, and sources."""
     _validate_uuid(session_id)
     try:
         state = await service.get_state(session_id)
@@ -131,6 +132,7 @@ async def get_session_state(
         status=str(state.get("status", "unknown")),
         approval_required=bool(state.get("approval_required", False)),
         errors=state.get("errors", []),
+        sources=_serialize_sources(state.get("search_results")),
     )
 
 
@@ -210,7 +212,8 @@ async def stream_events(
     and emits an event whenever `current_step` changes.
 
     Event format (text/event-stream):
-        data: {"step": "<node_name>", "status": "<session_status>", "approval_required": <bool>}
+        data: {"step": "<node_name>", "status": "<session_status>",
+               "approval_required": <bool>, "sources": <list[dict] | null>}
 
     Terminal steps: "done", "completed", or "failed" — client should close the connection.
     """
@@ -266,6 +269,7 @@ async def _sse_generator(
         current_step: str   = state.get("current_step", "unknown")
         session_status: str = str(state.get("status", "unknown"))
         approval_required: bool = bool(state.get("approval_required", False))
+        sources = _serialize_sources(state.get("search_results"))
 
         if current_step != last_step:
             last_step = current_step
@@ -273,6 +277,7 @@ async def _sse_generator(
                 "step": current_step,
                 "status": session_status,
                 "approval_required": approval_required,
+                "sources": sources,
             })
 
         if current_step in _TERMINAL_STEPS or session_status in _TERMINAL_STEPS:
@@ -299,3 +304,14 @@ def _validate_uuid(value: str) -> None:
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid session_id format: {value!r}",
         )
+
+
+def _serialize_sources(search_results) -> list[dict] | None:
+    """
+    Converts the AgentState's `search_results` (a SearchResults model holding
+    a list of SearchResult: title, url, content, score, provider) into plain
+    dicts the API response / SSE event can carry.
+    """
+    if not search_results or not getattr(search_results, "results", None):
+        return None
+    return [r.model_dump() for r in search_results.results]
