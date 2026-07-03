@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TesseractResearch</title>
+<style>
+  :root{
+    --bg:#0f1117;
+    --sidebar-bg:#161b27;
+    --surface:#1c2333;
+    --border:#2a3448;
+    --primary:#3B82F6;
+    --cyan:#22D3EE;
+    --gradient:linear-gradient(135deg,#3B82F6,#22D3EE);
+    --text:#e8eaf0;
+    --text-secondary:#8b95a8;
+    --text-muted:#4a5568;
+    --radius-sm:8px;
+    --radius-lg:12px;
+    --amber:#f59e0b;
+    --green:#22c55e;
+    --red:#ef4444;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-weight:400;
+    overflow:hidden;
+  }
+  #app{display:flex;height:100vh;width:100vw;}
+
+  /* ---------- Sidebar ---------- */
+  #sidebar{
+    width:260px;
+    flex-shrink:0;
+    background:var(--sidebar-bg);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    transition:width .2s ease;
+  }
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-header .logo-glow svg{filter:drop-shadow(0 0 4px #3B82F680);}
+  .brand-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .version-badge{
+    font-size:10px;color:var(--text-muted);border:1px solid var(--border);
+    border-radius:6px;padding:2px 6px;margin-left:auto;flex-shrink:0;
+  }
+  .sidebar-body{padding:14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;}
+  .btn-new{
+    width:100%;padding:10px 12px;border:none;border-radius:var(--radius-sm);
+    background:var(--gradient);color:#fff;font-size:13px;font-weight:500;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:filter .15s;
+  }
+  .btn-new:hover{filter:brightness(1.08);}
+  .section-label{
+    font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
+    margin-top:4px;
+  }
+  #session-list{display:flex;flex-direction:column;gap:4px;}
+  .session-item{
+    display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius-sm);
+    cursor:pointer;border-left:2px solid transparent;transition:background .15s;
+  }
+  .session-item:hover{background:#1c233388;}
+  .session-item.active{background:var(--surface);border-left:2px solid var(--primary);}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .status-dot.running{background:var(--primary);animation:pulse 1.4s infinite;}
+  .status-dot.waiting{background:var(--amber);}
+  .status-dot.complete{background:var(--green);}
+  .status-dot.failed{background:var(--red);}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 #3B82F666;}70%{box-shadow:0 0 0 6px #3B82F600;}100%{box-shadow:0 0 0 0 #3B82F600;}}
+  .session-meta{display:flex;flex-direction:column;overflow:hidden;flex:1;}
+  .session-title{font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .session-time{font-size:10.5px;color:var(--text-muted);}
+  .empty-sessions{font-size:12px;color:var(--text-muted);padding:6px 2px;line-height:1.5;}
+
+  .sidebar-footer{
+    border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px;
+  }
+  .avatar{
+    width:28px;height:28px;border-radius:50%;background:var(--gradient);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;
+  }
+  .footer-name{font-size:12.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+  .icon-btn{
+    background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;
+    display:flex;align-items:center;justify-content:center;border-radius:6px;
+  }
+  .icon-btn:hover{color:var(--text-secondary);background:#ffffff0a;}
+
+  /* ---------- Main ---------- */
+  #main{flex:1;position:relative;overflow:auto;}
+  .view{
+    position:absolute;inset:0;display:flex;
+    opacity:0;transform:translateY(8px);pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;
+  }
+  .view.visible{opacity:1;transform:translateY(0);pointer-events:auto;}
+
+  /* Input view */
+  #view-input{align-items:center;justify-content:center;}
+  .input-box{width:100%;max-width:640px;padding:24px;}
+  .input-headline{font-size:28px;font-weight:500;color:var(--text);text-align:center;margin:0 0 8px;}
+  .input-headline .accent{
+    background:var(--gradient);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .input-sub{font-size:14px;color:var(--text-secondary);text-align:center;margin:0 0 28px;}
+  textarea#query-input{
+    width:100%;min-height:84px;background:var(--surface);color:var(--text);
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;
+    font-size:14px;font-family:inherit;resize:vertical;outline:none;
+    transition:box-shadow .15s,border-color .15s;
+  }
+  textarea#query-input::placeholder{color:var(--text-muted);}
+  textarea#query-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #22D3EE40;}
+  .char-hint{font-size:11px;color:var(--text-muted);margin-top:6px;text-align:right;}
+  .quick-chips{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+  .quick-chip{
+    font-size:12.5px;color:var(--text-secondary);background:var(--surface);
+    border:1px solid var(--border);border-radius:20px;padding:7px 14px;cursor:pointer;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .quick-chip:hover{color:var(--text);border-color:var(--cyan);background:#1c233388;}
+  .btn-primary{
+    width:100%;margin-top:14px;padding:13px;border:none;border-radius:var(--radius-sm);
+    background:var(--gradient);color:#fff;font-size:15px;font-weight:500;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;filter:none;}
+  .error-banner{
+    margin-top:14px;padding:10px 12px;background:#3b1f24;border:1px solid #7f1d1d;
+    color:#fca5a5;font-size:12.5px;border-radius:var(--radius-sm);
+  }
+
+  /* Progress view */
+  #view-progress{align-items:flex-start;justify-content:center;padding:60px 24px;}
+  .progress-box{width:100%;max-width:560px;}
+  .progress-title{font-size:14px;color:var(--text-secondary);margin:0 0 24px;}
+  .steps{display:flex;flex-direction:column;}
+  .step{display:flex;gap:14px;position:relative;padding-bottom:26px;}
+  .step:last-child{padding-bottom:0;}
+  .step-connector{
+    position:absolute;left:10px;top:22px;bottom:0;width:1px;background:var(--border);
+  }
+  .step:last-child .step-connector{display:none;}
+  .step-icon{
+    width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);
+    background:var(--bg);z-index:1;
+  }
+  .step-body{padding-top:1px;}
+  .step-name{font-size:13px;font-weight:500;color:var(--text-muted);}
+  .step-desc{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .step.waiting .step-icon{border-color:var(--border);color:var(--text-muted);}
+  .step.active{background:transparent;}
+  .step.active .step-icon{background:#1c3a6e;border-color:var(--primary);color:var(--primary);animation:pulse 1.4s infinite;}
+  .step.active .step-name{color:var(--text);}
+  .step.active .step-desc{color:var(--text-secondary);}
+  .step.done .step-icon{background:#0f2a1e;border-color:#22D3EE40;color:var(--cyan);}
+  .step.done .step-name{color:var(--text-muted);}
+  .step.failed .step-icon{background:#3b1f24;border-color:var(--red);color:var(--red);}
+  .step.failed .step-name{color:#fca5a5;}
+
+  /* Approval view */
+  #view-approval{align-items:center;justify-content:center;}
+  .approval-card{
+    width:480px;max-width:90vw;max-height:80vh;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-lg);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .approval-header{padding:18px 20px;border-bottom:1px solid var(--border);}
+  .approval-header h3{font-size:15px;font-weight:500;color:var(--text);margin:0 0 4px;}
+  .approval-header p{font-size:12px;color:var(--text-muted);margin:0;}
+  .approval-body{padding:14px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+  .source-card{
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .source-title{font-size:13px;color:var(--text);}
+  .source-url{font-size:11px;color:var(--cyan);word-break:break-all;}
+  .source-snippet{font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:2px;}
+  .source-meta-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
+  .source-score{
+    font-size:11px;background:#1c3a6e;color:var(--primary);
+    padding:2px 7px;border-radius:6px;
+  }
+  .source-provider{font-size:10.5px;color:var(--text-muted);border:1px solid var(--border);padding:2px 7px;border-radius:6px;}
+  .approval-note{font-size:12px;color:var(--text-muted);line-height:1.6;}
+  .approval-footer{
+    padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;
+  }
+  .btn-ghost{
+    padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);
+    background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;transition:background .15s;
+  }
+  .btn-ghost:hover{background:#ffffff0a;}
+  .btn-approve{
+    padding:9px 18px;border:none;border-radius:var(--radius-sm);background:var(--gradient);
+    color:#fff;font-size:13px;font-weight:500;cursor:pointer;transition:filter .15s;
+  }
+  .btn-approve:hover{filter:brightness(1.08);}
+  .btn-approve:disabled,.btn-ghost:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* Report view */
+  #view-report{align-items:flex-start;justify-content:center;padding:48px 24px;}
+  .report-box{width:100%;max-width:980px;}
+  .report-back{
+    display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);
+    font-size:12.5px;text-decoration:none;cursor:pointer;background:none;border:none;
+    padding:0;margin-bottom:16px;transition:color .15s;
+  }
+  .report-back:hover{color:var(--text-secondary);}
+  .report-topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .badge-complete{
+    font-size:11.5px;background:#0f2a1e;color:var(--green);border:1px solid #22c55e40;
+    padding:4px 10px;border-radius:6px;
+  }
+  .badge-failed{
+    font-size:11.5px;background:#3b1f24;color:var(--red);border:1px solid #ef444440;
+    padding:4px 10px;border-radius:6px;
+  }
+  .btn-download{margin-left:auto;}
+  .report-layout{display:flex;gap:24px;align-items:flex-start;}
+  .report-card{
+    flex:1;min-width:0;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:24px;animation:fadeIn .3s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .report-card h1{font-size:20px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;margin:0 0 16px;}
+  .report-card h2{font-size:15px;font-weight:500;color:var(--text);margin:22px 0 10px;scroll-margin-top:20px;}
+  .report-card p{font-size:14px;color:var(--text-secondary);line-height:1.7;margin:0 0 12px;}
+  .report-card ul{margin:0 0 14px;padding-left:20px;}
+  .report-card li{font-size:14px;color:var(--text-secondary);line-height:1.7;margin-bottom:4px;}
+  .report-card li::marker{color:var(--cyan);}
+  .report-card a{color:var(--cyan);text-decoration:none;}
+  .report-card a:hover{text-decoration:underline;}
+  .report-card strong{color:var(--text);font-weight:500;}
+  .report-card blockquote{
+    margin:0 0 14px;padding:8px 14px;border-left:2px solid var(--primary);
+    background:#13182666;color:var(--text-secondary);font-size:13px;font-style:italic;line-height:1.6;
+  }
+  .report-card table{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:13px;}
+  .report-card th,.report-card td{
+    border:1px solid var(--border);padding:8px 10px;text-align:left;color:var(--text-secondary);
+  }
+  .report-card th{color:var(--text);font-weight:500;background:#161b27;}
+  .report-card tr:nth-child(even) td{background:#ffffff03;}
+
+  /* right rail: on-this-page / sources / notes */
+  .report-rail{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:20px;}
+  .rail-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
+  .rail-title{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .toc-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .toc-list a{font-size:12.5px;color:var(--text-secondary);text-decoration:none;}
+  .toc-list a:hover{color:var(--cyan);}
+  .sources-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:src;}
+  .sources-list li{counter-increment:src;font-size:12px;}
+  .sources-list li::before{content:counter(src)". ";color:var(--text-muted);}
+  .sources-list .src-title{color:var(--text);display:block;}
+  .sources-list a{color:var(--cyan);text-decoration:none;font-size:11px;word-break:break-all;}
+  .sources-list a:hover{text-decoration:underline;}
+  .notes-box p{font-size:12.5px;color:var(--text-secondary);line-height:1.6;margin:0;}
+
+  /* mixed Arabic/English text: resolve direction per run instead of
+     forcing the whole line to follow the document's base direction */
+  .session-title, .report-card, .report-card *, .source-title, .source-snippet,
+  .source-url, .approval-note, .input-headline, .input-sub, #query-input,
+  .char-hint, .progress-title, .step-name, .step-desc, .approval-header p,
+  .toc-list a, .sources-list, .notes-box p{
+    unicode-bidi: plaintext;
+  }
+
+  /* Settings popover */
+  #settings-popover{
+    position:absolute;bottom:56px;left:14px;width:230px;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;
+    display:none;flex-direction:column;gap:8px;z-index:20;
+  }
+  #settings-popover.open{display:flex;}
+  #settings-popover label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;}
+  #settings-popover input{
+    background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);
+    font-size:12.5px;padding:7px 8px;outline:none;
+  }
+  #settings-popover input:focus{border-color:var(--cyan);}
+  #settings-popover .btn-primary{margin-top:2px;padding:8px;font-size:12.5px;}
+
+  /* toast */
+  #toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--surface);border:1px solid var(--border);color:var(--text);
+    padding:10px 16px;border-radius:var(--radius-sm);font-size:12.5px;
+    opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:50;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Responsive */
+  @media(max-width:1100px){
+    .report-rail{display:none;}
+  }
+  @media(max-width:768px){
+    #sidebar{width:64px;}
+    .brand-name,.version-badge,.section-label,.session-meta,.footer-name{display:none;}
+    .sidebar-header{justify-content:center;}
+    .btn-new{padding:10px 0;font-size:0;}
+    .btn-new svg{margin:0;}
+    .session-item{justify-content:center;padding:9px;}
+    .sidebar-footer{justify-content:center;}
+    #settings-popover{left:10px;width:200px;}
+    .input-headline{font-size:22px;}
+    .approval-card{width:94vw;}
+    .quick-chips{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-glow">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+          <polygon points="4,8 14,3 24,8 24,20 14,25 4,20" fill="none" stroke="#3B82F6" stroke-width="1.2" stroke-linejoin="round"/>
+          <polygon points="9,11 14,8 19,11 19,17 14,20 9,17" fill="none" stroke="#22D3EE" stroke-width="1" stroke-linejoin="round"/>
+          <line x1="4" y1="8" x2="9" y2="11" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="24" y1="8" x2="19" y2="11" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="24" y1="20" x2="19" y2="17" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="4" y1="20" x2="9" y2="17" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="14" y1="3" x2="14" y2="8" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <line x1="14" y1="25" x2="14" y2="20" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+          <circle cx="14" cy="14" r="1.5" fill="#22D3EE" opacity="0.9"/>
+        </svg>
+      </span>
+      <span class="brand-name">TesseractResearch</span>
+      <span class="version-badge">v1.0</span>
+    </div>
+
+    <div class="sidebar-body">
+      <button class="btn-new" id="btn-new-research">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>New research</span>
+      </button>
+      <div>
+        <div class="section-label">Recent</div>
+        <div id="session-list"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer" style="position:relative;">
+      <div class="avatar" id="user-avatar">Z</div>
+      <span class="footer-name">Zeyad</span>
+      <button class="icon-btn" id="btn-settings" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div id="settings-popover">
+        <label>Api base url</label>
+        <input type="text" id="api-base-input" placeholder="http://localhost:8000">
+        <button class="btn-primary" id="btn-save-api">Save</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- INPUT VIEW -->
+    <section class="view" id="view-input">
+      <div class="input-box">
+        <h1 class="input-headline">What should we <span class="accent">research</span> today?</h1>
+        <p class="input-sub">Give the agent a question — it plans, searches, and reports back with sources you can verify</p>
+        <textarea id="query-input" dir="auto" placeholder="e.g. Compare GPU cloud providers for training a 7B parameter model" rows="3" minlength="10" maxlength="2000"></textarea>
+        <div class="char-hint" id="char-hint">min 10 characters</div>
+        <button class="btn-primary" id="btn-start">
+          <span>Start research</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <div class="error-banner" id="input-error" style="display:none;"></div>
+        <div class="quick-chips" id="quick-chips">
+          <button class="quick-chip" type="button" data-query="Compare the top GPU cloud providers on price, availability, and performance for training large models">Compare GPU cloud providers</button>
+          <button class="quick-chip" type="button" data-query="Explain the differences between SSE, WebSockets, and polling for real-time updates, with tradeoffs">SSE vs WebSockets vs polling</button>
+          <button class="quick-chip" type="button" data-query="Summarize the latest patterns for human-in-the-loop approval flows in LangGraph agents">LangGraph HITL patterns</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRESS VIEW -->
+    <section class="view" id="view-progress">
+      <div class="progress-box">
+        <p class="progress-title" id="progress-title">Running research pipeline…</p>
+        <div class="steps" id="steps-container"></div>
+        <div class="error-banner" id="progress-error" style="display:none;"></div>
+        <!-- <button class="btn-ghost" id="btn-refresh-status" style="margin-top:18px;">Refresh status</button> -->
+      </div>
+    </section>
+
+    <!-- APPROVAL VIEW -->
+    <section class="view" id="view-approval">
+      <div class="approval-card">
+        <div class="approval-header">
+          <h3>Review search results</h3>
+          <p id="approval-subtitle">Approve to continue scraping and analysis, or reject to stop here</p>
+        </div>
+        <div class="approval-body" id="approval-body"></div>
+        <div class="approval-footer">
+          <button class="btn-ghost" id="btn-reject">Cancel</button>
+          <button class="btn-approve" id="btn-approve">Approve &amp; continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORT VIEW -->
+    <section class="view" id="view-report">
+      <div class="report-box">
+        <button class="report-back" id="btn-report-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span>Back to sessions</span>
+        </button>
+        <div class="report-topbar">
+          <span class="badge-complete" id="report-badge">Research complete</span>
+          <button class="btn-ghost btn-download" id="btn-download">Download .md</button>
+        </div>
+        <div class="report-layout">
+          <div class="report-card" id="report-content"></div>
+          <aside class="report-rail" id="report-rail"></aside>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- config ---------------- */
+  const DEFAULT_API_BASE = window.location.origin.startsWith("http") && window.location.protocol !== "file:"
+    ? window.location.origin
+    : "http://localhost:8000";
+  let apiBase = localStorage.getItem("tr_api_base") || DEFAULT_API_BASE;
+
+  /* ---------------- state ---------------- */
+  let sessions = loadSessions();     // array of {id, query, status, current_step, approval_required, createdAt}
+  let currentSessionId = null;
+  let currentView = "input";
+  let eventSource = null;
+  let lastRenderedStep = null;
+
+  const STEP_DEFS = [
+    {key:"planning",  name:"Planning",           desc:"Breaking the query into a research plan",      match:s=>/plan/i.test(s)},
+    {key:"searching", name:"Searching",          desc:"Running web searches for relevant sources",     match:s=>/search/i.test(s)},
+    {key:"approval",  name:"Awaiting approval",  desc:"Waiting for you to review the search results",  match:s=>/approv/i.test(s)},
+    {key:"scraping",  name:"Scraping",           desc:"Pulling full content from approved sources",     match:s=>/scrap/i.test(s)},
+    {key:"analyzing", name:"Analyzing",          desc:"Running multi-model analysis over the content",  match:s=>/analy/i.test(s)},
+    {key:"writing",   name:"Writing report",     desc:"Composing the final research report",            match:s=>/(report|writ)/i.test(s)}
+  ];
+
+  /* ---------------- persistence ---------------- */
+  function loadSessions(){
+    try{ return JSON.parse(localStorage.getItem("tr_sessions")) || []; }catch(e){ return []; }
+  }
+  function saveSessions(){
+    localStorage.setItem("tr_sessions", JSON.stringify(sessions));
+  }
+  function upsertSession(patch){
+    let s = sessions.find(x=>x.id===patch.id);
+    if(!s){ s = {id:patch.id, createdAt:Date.now()}; sessions.unshift(s); }
+    Object.assign(s, patch);
+    saveSessions();
+    renderSessionList();
+  }
+
+  /* ---------------- helpers ---------------- */
+  function toast(msg, isError){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.borderColor = isError ? "#7f1d1d" : "var(--border)";
+    t.style.color = isError ? "#fca5a5" : "var(--text)";
+    t.classList.add("show");
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(()=>t.classList.remove("show"), 3200);
+  }
+  function relativeTime(ts){
+    const diff = Math.max(0, Date.now()-ts);
+    const m = Math.floor(diff/60000);
+    if(m < 1) return "just now";
+    if(m < 60) return m+" min ago";
+    const h = Math.floor(m/60);
+    if(h < 24) return h+" hr ago";
+    return Math.floor(h/24)+" d ago";
+  }
+  function statusClass(status, approvalRequired){
+    if(approvalRequired) return "waiting";
+    if(status === "completed" || status === "done") return "complete";
+    if(status === "failed") return "failed";
+    return "running";
+  }
+  async function apiFetch(path, options){
+    const res = await fetch(apiBase.replace(/\/$/,"") + path, Object.assign({
+      headers:{"Content-Type":"application/json"}
+    }, options));
+    if(!res.ok){
+      let detail = res.statusText;
+      try{ const j = await res.json(); detail = (j.detail && JSON.stringify(j.detail)) || detail; }catch(e){}
+      throw new Error("API error "+res.status+": "+detail);
+    }
+    return res.json();
+  }
+
+  /* ---------------- view switching ---------------- */
+  function showView(name){
+    currentView = name;
+    ["input","progress","approval","report"].forEach(v=>{
+      document.getElementById("view-"+v).classList.toggle("visible", v===name);
+    });
+  }
+
+  /* ---------------- sidebar ---------------- */
+  function renderSessionList(){
+    const el = document.getElementById("session-list");
+    if(sessions.length === 0){
+      el.innerHTML = '<div class="empty-sessions">No research sessions yet — start one above</div>';
+      return;
+    }
+    el.innerHTML = "";
+    sessions.slice(0,50).forEach(s=>{
+      const item = document.createElement("div");
+      item.className = "session-item" + (s.id===currentSessionId ? " active" : "");
+      const cls = statusClass(s.status, s.approval_required);
+      item.innerHTML = `
+        <span class="status-dot ${cls}"></span>
+        <span class="session-meta">
+          <span class="session-title">${escapeHtml(s.query || s.id)}</span>
+          <span class="session-time">${relativeTime(s.createdAt)}</span>
+        </span>`;
+      item.addEventListener("click", ()=>openSession(s.id));
+      el.appendChild(item);
+    });
+  }
+  function escapeHtml(str){
+    return (str||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function truncate(str, max){
+    if(!str) return "";
+    return str.length > max ? str.slice(0, max).trim() + "…" : str;
+  }
+
+  /* ---------------- input view ---------------- */
+  const queryInput = document.getElementById("query-input");
+  const btnStart = document.getElementById("btn-start");
+  const charHint = document.getElementById("char-hint");
+  const inputError = document.getElementById("input-error");
+
+  queryInput.addEventListener("input", ()=>{
+    const len = queryInput.value.trim().length;
+    charHint.textContent = len < 10 ? `${10-len} more characters needed` : `${len}/2000`;
+  });
+
+  document.getElementById("quick-chips").addEventListener("click", (e)=>{
+    const chip = e.target.closest(".quick-chip");
+    if(!chip) return;
+    queryInput.value = chip.dataset.query || chip.textContent;
+    queryInput.dispatchEvent(new Event("input"));
+    queryInput.focus();
+  });
+
+  btnStart.addEventListener("click", async ()=>{
+    const query = queryInput.value.trim();
+    inputError.style.display = "none";
+    if(query.length < 10){
+      inputError.textContent = "Query needs to be at least 10 characters";
+      inputError.style.display = "block";
+      return;
+    }
+    btnStart.disabled = true;
+    btnStart.querySelector("span").textContent = "Starting…";
+    queryInput.value = "";
+    charHint.textContent = "min 10 characters";
+
+    // The /research call blocks server-side until the graph reaches the
+    // approval interrupt (planner -> search -> pause), so there's no
+    // session_id / SSE stream to attach to yet. Show the pipeline starting
+    // immediately for feedback, then reconcile with the real state once
+    // the request resolves.
+    showView("progress");
+    renderSteps("planning", "running");
+
+    try{
+      const res = await apiFetch("/research", {method:"POST", body:JSON.stringify({query})});
+      const id = res.session_id;
+      currentSessionId = id;
+      upsertSession({id, query, status:"running", current_step:"planning", approval_required:false, createdAt:Date.now()});
+
+      // Fetch the authoritative state right away instead of waiting on SSE:
+      // since the graph already paused before this call returned, no further
+      // "step changed" event will ever be emitted for the pipeline to reach
+      // this point, so polling the state endpoint once is what actually
+      // reveals that approval is required.
+      const state = await apiFetch("/research/"+encodeURIComponent(id));
+      handleStreamUpdate(id, {step:state.current_step, status:state.status, approval_required:state.approval_required, errors:state.errors});
+
+      const terminal = ["done","completed","failed"].includes((state.status||"").toLowerCase());
+      if(!terminal && !state.approval_required){
+        // Not paused yet for some reason — keep watching for updates.
+        connectStream(id);
+      }
+    }catch(e){
+      showView("input");
+      inputError.textContent = e.message;
+      inputError.style.display = "block";
+    }finally{
+      btnStart.disabled = false;
+      btnStart.querySelector("span").textContent = "Start research";
+    }
+  });
+
+  // document.getElementById("btn-refresh-status").addEventListener("click", async ()=>{
+  //   if(!currentSessionId) return;
+  //   try{
+  //     const state = await apiFetch("/research/"+encodeURIComponent(currentSessionId));
+  //     handleStreamUpdate(currentSessionId, {step:state.current_step, status:state.status, approval_required:state.approval_required, errors:state.errors});
+  //   }catch(e){
+  //     toast(e.message, true);
+  //   }
+  // });
+
+  document.getElementById("btn-new-research").addEventListener("click", ()=>{
+    closeStream();
+    currentSessionId = null;
+    queryInput.value = "";
+    inputError.style.display = "none";
+    renderSessionList();
+    showView("input");
+  });
+
+  /* ---------------- progress view ---------------- */
+  function stepIndexFor(rawStep){
+    if(!rawStep) return -1;
+    for(let i=0;i<STEP_DEFS.length;i++){
+      if(STEP_DEFS[i].match(rawStep)) return i;
+    }
+    return -1;
+  }
+  function renderSteps(rawStep, status){
+    const activeIdx = stepIndexFor(rawStep);
+    const failed = status === "failed";
+    const container = document.getElementById("steps-container");
+    container.innerHTML = "";
+    STEP_DEFS.forEach((def, i)=>{
+      let cls = "waiting";
+      let iconContent = "";
+      if(failed && i === activeIdx){ cls = "failed"; iconContent = "!"; }
+      else if(activeIdx === -1 && (status==="completed"||status==="done")){ cls = "done"; iconContent = "✓"; }
+      else if(i < activeIdx){ cls = "done"; iconContent = "✓"; }
+      else if(i === activeIdx){ cls = "active"; iconContent = ""; }
+      const div = document.createElement("div");
+      div.className = "step " + cls;
+      div.innerHTML = `
+        <div class="step-connector"></div>
+        <div class="step-icon">${iconContent}</div>
+        <div class="step-body">
+          <div class="step-name">${def.name}</div>
+          <div class="step-desc">${def.desc}</div>
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  /* ---------------- streaming (SSE) ---------------- */
+  function closeStream(){
+    if(eventSource){ eventSource.close(); eventSource = null; }
+  }
+  function connectStream(sessionId){
+    closeStream();
+    const url = apiBase.replace(/\/$/,"") + "/research/" + encodeURIComponent(sessionId) + "/events";
+    try{
+      eventSource = new EventSource(url);
+    }catch(e){
+      toast("Could not open live stream, falling back to polling", true);
+      pollState(sessionId);
+      return;
+    }
+    eventSource.onmessage = (evt)=>{
+      let data;
+      try{ data = JSON.parse(evt.data); }catch(e){ return; }
+      handleStreamUpdate(sessionId, data);
+    };
+    eventSource.onerror = ()=>{
+      closeStream();
+      pollState(sessionId);
+    };
+  }
+  async function pollState(sessionId){
+    if(currentSessionId !== sessionId) return;
+    try{
+      const state = await apiFetch("/research/"+encodeURIComponent(sessionId));
+      handleStreamUpdate(sessionId, {step:state.current_step, status:state.status, approval_required:state.approval_required, errors:state.errors});
+      const terminal = ["done","completed","failed"].includes((state.status||"").toLowerCase());
+      if(!terminal && !state.approval_required){
+        setTimeout(()=>pollState(sessionId), 2000);
+      }
+    }catch(e){
+      toast(e.message, true);
+    }
+  }
+  function normalizeBool(v){
+    if(typeof v === "boolean") return v;
+    if(typeof v === "string") return !["false","0",""].includes(v.toLowerCase());
+    return !!v;
+  }
+  function handleStreamUpdate(sessionId, data){
+    const step = data.step || "";
+    const status = (data.status||"").toLowerCase();
+    const terminal = status === "done" || status === "completed" || status === "failed";
+    // Some backends only set approval_required momentarily or omit it on
+    // the state endpoint; fall back to matching the step name itself so a
+    // pipeline sitting at the approval node always surfaces the modal.
+    const approvalRequired = normalizeBool(data.approval_required) || (!terminal && /approv/i.test(step));
+
+    upsertSession({id:sessionId, status, current_step:step, approval_required:approvalRequired});
+
+    if(currentSessionId !== sessionId) return;
+
+    if(approvalRequired){
+      closeStream();
+      openApproval(sessionId, data);
+      return;
+    }
+
+    if(currentView === "progress" || (currentView !== "report" && currentView !== "approval")){
+      showView("progress");
+      renderSteps(step, status);
+      document.getElementById("progress-error").style.display = "none";
+    }
+
+    if(status === "failed"){
+      closeStream();
+      showView("progress");
+      renderSteps(step, "failed");
+      const errBox = document.getElementById("progress-error");
+      const errs = data.errors && data.errors.length ? data.errors.join(", ") : "The pipeline failed";
+      errBox.textContent = errs;
+      errBox.style.display = "block";
+      return;
+    }
+    if(status === "done" || status === "completed"){
+      closeStream();
+      openReport(sessionId);
+    }
+  }
+
+  /* ---------------- approval view ---------------- */
+  function extractSources(data){
+    if(!data) return null;
+    const candidates = [
+      data.sources, data.search_results, data.results, data.search_sources,
+      data.context && data.context.sources, data.state && data.state.sources
+    ];
+    for(const c of candidates){
+      if(Array.isArray(c) && c.length) return c;
+    }
+    return null;
+  }
+  function openApproval(sessionId, data){
+    showView("approval");
+    const body = document.getElementById("approval-body");
+    body.innerHTML = "";
+    const sources = extractSources(data);
+    if(sources){
+      sources.forEach(src=>{
+        const title = src.title || src.url || "Untitled source";
+        const url = src.url || "";
+        const snippet = src.content ? truncate(src.content, 160) : "";
+        const scoreVal = typeof src.score === "number" ? src.score : null;
+        const provider = src.provider || "";
+        const card = document.createElement("div");
+        card.className = "source-card";
+        card.innerHTML = `
+          <div class="source-title">${escapeHtml(title)}</div>
+          <div class="source-url">${escapeHtml(url)}</div>
+          ${snippet ? `<div class="source-snippet">${escapeHtml(snippet)}</div>` : ""}
+          <div class="source-meta-row">
+            ${scoreVal !== null ? `<span class="source-score">relevance ${scoreVal.toFixed(2)}</span>` : ""}
+            ${provider ? `<span class="source-provider">${escapeHtml(provider)}</span>` : ""}
+          </div>`;
+        body.appendChild(card);
+      });
+    }else{
+      body.innerHTML = `<p class="approval-note">
+        The search step has finished and the pipeline is paused for your approval.
+        The session-state response from the backend doesn't currently include the individual
+        search results (its documented fields are <code>current_step</code>, <code>status</code>,
+        <code>approval_required</code> and <code>errors</code>) — so they can't be listed here yet.
+        Once the backend returns them (e.g. a <code>sources</code> array on this endpoint or on the
+        SSE event), they'll show up here automatically. Approving or rejecting below still resumes
+        the graph correctly either way.
+      </p>`;
+    }
+    const btnApprove = document.getElementById("btn-approve");
+    const btnReject = document.getElementById("btn-reject");
+    btnApprove.disabled = false;
+    btnReject.disabled = false;
+    btnApprove.onclick = ()=>decide(sessionId, true);
+    btnReject.onclick = ()=>decide(sessionId, false);
+  }
+  async function decide(sessionId, approved){
+    const btnApprove = document.getElementById("btn-approve");
+    const btnReject = document.getElementById("btn-reject");
+    btnApprove.disabled = true; btnReject.disabled = true;
+    btnApprove.textContent = approved ? "Continuing…" : "Approve & continue →";
+
+    if(approved){
+      showView("progress");
+      renderSteps("scraping", "running");
+      upsertSession({id:sessionId, approval_required:false, status:"running", current_step:"scraping"});
+      // /approve blocks server-side until the graph reaches END (scraper ->
+      // analyzer -> report -> done), so open the live stream now to reflect
+      // scraping/analyzing/writing while that request is in flight.
+      connectStream(sessionId);
+    }
+
+    try{
+      await apiFetch("/research/"+encodeURIComponent(sessionId)+"/approve", {
+        method:"POST", body:JSON.stringify({approved})
+      });
+      closeStream();
+      if(approved){
+        // The approve call only resolves once the pipeline is fully done,
+        // so the report is guaranteed to be ready now.
+        await openReport(sessionId);
+      }else{
+        upsertSession({id:sessionId, approval_required:false, status:"failed"});
+        showView("progress");
+        renderSteps("approval", "failed");
+        const errBox = document.getElementById("progress-error");
+        errBox.textContent = "Session marked as rejected and stopped";
+        errBox.style.display = "block";
+      }
+    }catch(e){
+      closeStream();
+      toast(e.message, true);
+      showView("progress");
+      renderSteps(approved ? "writing" : "approval", "failed");
+      const errBox = document.getElementById("progress-error");
+      errBox.textContent = e.message;
+      errBox.style.display = "block";
+      upsertSession({id:sessionId, status:"failed"});
+    }finally{
+      btnApprove.disabled = false; btnReject.disabled = false;
+      btnApprove.textContent = "Approve & continue →";
+    }
+  }
+
+  /* ---------------- report view ---------------- */
+  async function openReport(sessionId){
+    try{
+      const res = await apiFetch("/research/"+encodeURIComponent(sessionId)+"/report");
+      showView("report");
+      document.getElementById("report-badge").textContent = "Research complete";
+      document.getElementById("report-badge").className = "badge-complete";
+      const {html, railHtml} = renderReport(res.report || "");
+      document.getElementById("report-content").innerHTML = html;
+      const rail = document.getElementById("report-rail");
+      rail.innerHTML = railHtml;
+      rail.style.display = railHtml ? "flex" : "none";
+      document.getElementById("btn-download").onclick = ()=>downloadMd(sessionId, res.report || "");
+      upsertSession({id:sessionId, status:"completed", approval_required:false});
+      toast("Report saved to this session");
+    }catch(e){
+      toast("Report not ready yet: "+e.message, true);
+    }
+  }
+  function downloadMd(sessionId, content){
+    const blob = new Blob([content], {type:"text/markdown"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "research-"+sessionId+".md";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ---------------- markdown rendering ---------------- */
+  function slugify(text){
+    return (text || "").toLowerCase().trim()
+      .replace(/[^\p{L}\p{N}\s-]/gu, "")
+      .replace(/\s+/g, "-")
+      .slice(0, 60) || "section";
+  }
+  function isSeparatorRow(line){
+    return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(line || "");
+  }
+  function splitRow(line){
+    let l = line.trim();
+    if(l.startsWith("|")) l = l.slice(1);
+    if(l.endsWith("|")) l = l.slice(0, -1);
+    return l.split("|").map(c=>c.trim());
+  }
+  function renderBlock(lines){
+    let html = ""; let inList = false;
+    function closeList(){ if(inList){ html += "</ul>"; inList = false; } }
+    let i = 0;
+    while(i < lines.length){
+      const raw = lines[i];
+      const l = raw.trim();
+      if(l === ""){ closeList(); i++; continue; }
+
+      // GFM table: header row followed by a separator row
+      if(l.includes("|") && i+1 < lines.length && isSeparatorRow(lines[i+1])){
+        closeList();
+        const headerCells = splitRow(l);
+        i += 2;
+        const bodyRows = [];
+        while(i < lines.length && lines[i].trim() !== "" && lines[i].includes("|")){
+          bodyRows.push(splitRow(lines[i]));
+          i++;
+        }
+        html += "<table><thead><tr>" + headerCells.map(c=>`<th>${inline(c)}</th>`).join("") + "</tr></thead><tbody>";
+        bodyRows.forEach(row=>{
+          html += "<tr>" + row.map(c=>`<td>${inline(c)}</td>`).join("") + "</tr>";
+        });
+        html += "</tbody></table>";
+        continue;
+      }
+
+      let m;
+      if((m = l.match(/^#\s+(.*)/))){ closeList(); html += `<h1>${inline(m[1])}</h1>`; i++; continue; }
+      if((m = l.match(/^###\s+(.*)/))){ closeList(); html += `<h3 style="font-size:14px;color:var(--text);margin:16px 0 8px;">${inline(m[1])}</h3>`; i++; continue; }
+      if(/^>\s?/.test(l)){
+        closeList();
+        const quoteLines = [l.replace(/^>\s?/, "")];
+        i++;
+        while(i < lines.length && /^>\s?/.test(lines[i].trim())){
+          quoteLines.push(lines[i].trim().replace(/^>\s?/, ""));
+          i++;
+        }
+        html += `<blockquote>${inline(quoteLines.join(" "))}</blockquote>`;
+        continue;
+      }
+      if((m = l.match(/^[-*]\s+(.*)/))){
+        if(!inList){ html += "<ul>"; inList = true; }
+        html += `<li>${inline(m[1])}</li>`;
+        i++; continue;
+      }
+      closeList();
+      html += `<p>${inline(l)}</p>`;
+      i++;
+    }
+    closeList();
+    return html;
+  }
+  function extractLinkItems(lines){
+    const items = [];
+    lines.forEach(line=>{
+      const l = line.trim();
+      if(!l) return;
+      const linkMatch = l.match(/\[(.+?)\]\((.+?)\)/);
+      if(linkMatch){ items.push({text: linkMatch[1], url: linkMatch[2]}); return; }
+      const bulletMatch = l.match(/^[-*]\s+(.*)/);
+      const content = bulletMatch ? bulletMatch[1] : l;
+      const urlMatch = content.match(/https?:\/\/\S+/);
+      if(urlMatch){
+        const label = content.replace(urlMatch[0], "").replace(/[-–—:]\s*$/, "").trim();
+        items.push({text: label || urlMatch[0], url: urlMatch[0]});
+      }
+    });
+    return items;
+  }
+  /* Splits the report into an intro block + `##`-level sections, pulls a
+     "Sources" and/or "Notes" section (if the report actually has one) into
+     the right rail, and builds a table-of-contents from the real headings
+     that remain — nothing here is invented, only reorganized. */
+  function renderReport(md){
+    const lines = md.replace(/\r\n/g, "\n").split("\n");
+    const sections = [];
+    let current = {title: null, lines: []};
+    lines.forEach(line=>{
+      const m = line.match(/^##\s+(.*)/);
+      if(m){
+        sections.push(current);
+        current = {title: m[1].trim(), lines: []};
+      }else{
+        current.lines.push(line);
+      }
+    });
+    sections.push(current);
+
+    const isSources = t => t && /^sources?$/i.test(t.trim());
+    const isNotes   = t => t && /^notes?$/i.test(t.trim());
+    const sourcesSection = sections.find(s=>isSources(s.title));
+    const notesSection   = sections.find(s=>isNotes(s.title));
+    const mainSections   = sections.filter(s=>s!==sourcesSection && s!==notesSection);
+
+    let html = "";
+    const headings = [];
+    mainSections.forEach(sec=>{
+      if(sec.title){
+        const id = "sec-" + slugify(sec.title);
+        headings.push({id, text: sec.title});
+        html += `<h2 id="${id}">${inline(sec.title)}</h2>`;
+      }
+      html += renderBlock(sec.lines);
+    });
+
+    let railHtml = "";
+    if(headings.length || sourcesSection || notesSection){
+      railHtml += `<div class="rail-box"><p class="rail-title">On this page</p><ul class="toc-list">`;
+      headings.forEach(h=>{ railHtml += `<li><a href="#${h.id}">${inline(h.text)}</a></li>`; });
+      if(sourcesSection) railHtml += `<li><a href="#rail-sources">${inline(sourcesSection.title)}</a></li>`;
+      if(notesSection) railHtml += `<li><a href="#rail-notes">${inline(notesSection.title)}</a></li>`;
+      railHtml += `</ul></div>`;
+    }
+    if(sourcesSection){
+      const items = extractLinkItems(sourcesSection.lines);
+      if(items.length){
+        railHtml += `<div class="rail-box" id="rail-sources"><p class="rail-title">Sources</p><ol class="sources-list">`;
+        items.forEach(it=>{
+          railHtml += `<li><span class="src-title">${escapeHtml(it.text)}</span>${it.url ? `<a href="${escapeHtml(it.url)}" target="_blank" rel="noopener">${escapeHtml(truncate(it.url, 42))}</a>` : ""}</li>`;
+        });
+        railHtml += `</ol></div>`;
+      }
+    }
+    if(notesSection){
+      const text = notesSection.lines.map(l=>l.trim()).filter(Boolean).join(" ");
+      if(text){
+        railHtml += `<div class="rail-box notes-box" id="rail-notes"><p class="rail-title">Notes</p><p>${inline(text)}</p></div>`;
+      }
+    }
+    return {html, railHtml};
+  }
+  function inline(text){
+    let t = escapeHtml(text);
+    t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return t;
+  }
+
+  /* ---------------- open existing session ---------------- */
+  async function openSession(id){
+    closeStream();
+    currentSessionId = id;
+    renderSessionList();
+    const local = sessions.find(s=>s.id===id);
+    if(local && (local.status === "completed" || local.status === "done")){
+      openReport(id);
+      return;
+    }
+    showView("progress");
+    renderSteps(local ? local.current_step : null, local ? local.status : "running");
+    try{
+      const state = await apiFetch("/research/"+encodeURIComponent(id));
+      handleStreamUpdate(id, {step:state.current_step, status:state.status, approval_required:state.approval_required, errors:state.errors});
+      const terminal = ["done","completed","failed"].includes((state.status||"").toLowerCase());
+      if(!terminal && !state.approval_required){
+        connectStream(id);
+      }
+    }catch(e){
+      toast("Couldn't load session state: "+e.message, true);
+    }
+  }
+
+  /* ---------------- settings ---------------- */
+  const settingsPopover = document.getElementById("settings-popover");
+  const apiBaseInput = document.getElementById("api-base-input");
+  document.getElementById("btn-settings").addEventListener("click", ()=>{
+    apiBaseInput.value = apiBase;
+    settingsPopover.classList.toggle("open");
+  });
+  document.getElementById("btn-save-api").addEventListener("click", ()=>{
+    const v = apiBaseInput.value.trim();
+    if(v){
+      apiBase = v.replace(/\/$/,"");
+      localStorage.setItem("tr_api_base", apiBase);
+      toast("API base URL saved");
+    }
+    settingsPopover.classList.remove("open");
+  });
+  document.addEventListener("click", (e)=>{
+    if(!settingsPopover.contains(e.target) && e.target.id !== "btn-settings" && !e.target.closest("#btn-settings")){
+      settingsPopover.classList.remove("open");
+    }
+  });
+
+  /* ---------------- init ---------------- */
+  renderSessionList();
+  showView("input");
+})();
+</script>
+</body>
+</html>
