@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY:str
     HUGGINGFACEHUB_API_TOKEN:str
     GROQ_API_KEY:str
+    MISTRAL_API_KEY:str
+    CEREBRAS_API_KEY:str
 
     LANGSMITH_TRACING:bool=True
     LANGSMITH_API_KEY:str
