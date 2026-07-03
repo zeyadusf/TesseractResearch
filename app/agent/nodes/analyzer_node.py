@@ -21,7 +21,8 @@ async def analyzer_node(state: AgentState) -> dict:
     if not scraped_content:
         logger.warning("analyzer_node | no scraped content available")
         return {
-            "analysis": "No content was available for analysis.",
+            "analysis": "",
+            "analysis_failed": True,
             "current_step": "report",
             "errors": errors,
         }
@@ -47,7 +48,6 @@ async def analyzer_node(state: AgentState) -> dict:
 
     try:
         dispatcher = get_llm_dispatcher()
-        llm = dispatcher.get_llm("analyzer")
         messages = [
             SystemMessage(content=Prompts.ANALYZER),
             HumanMessage(
@@ -59,19 +59,28 @@ async def analyzer_node(state: AgentState) -> dict:
                 )
             ),
         ]
-        response = await llm.ainvoke(messages)
-        analysis = response.content.strip()
+        # ainvoke_with_fallback retries the same messages on the fallback
+        # provider if the primary raises at call time (rate limit, quota,
+        # 4xx/5xx) — unlike get_llm(), which only guards construction and
+        # never catches runtime failures.
+        analysis = await dispatcher.ainvoke_with_fallback("analyzer", messages)
         logger.info("analyzer_node | analysis generated | length=%d chars", len(analysis))
         return {
             "analysis": analysis,
+            "analysis_failed": False,
             "current_step": "report",
             "errors": errors,
         }
     except Exception as exc:
         logger.error("analyzer_node | error: %s", exc, exc_info=True)
         errors.append(f"analyzer_node failed: {exc}")
+        # NOTE: no fake "Analysis could not be generated..." string here.
+        # report_node checks `analysis_failed` explicitly and falls back to
+        # raw scraped_content instead of building a prompt around this text.
+        # Reaching this block means BOTH primary and fallback already failed.
         return {
-            "analysis": "Analysis could not be generated due to an error.",
+            "analysis": "",
+            "analysis_failed": True,
             "current_step": "report",
             "errors": errors,
         }

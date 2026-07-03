@@ -28,6 +28,7 @@ class AgentState(TypedDict):
 
     #   Analysis & Report
     analysis: str
+    analysis_failed: bool 
     final_report: str          
 
     #   Meta
