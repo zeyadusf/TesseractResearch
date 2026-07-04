@@ -1,4 +1,23 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: tesseract_research_app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   pgvector:
     image: pgvector/pgvector:pg18-trixie
     container_name: pgvector_agent
@@ -27,17 +46,14 @@ services:
       retries: 5
       start_period: 10s
     ports:
-      - "6379:6379"   
-    # networks:
-    #   - backend_net
+      - "6379:6379"
 
   redisinsight:
-      image: redis/redisinsight:latest
-      container_name: redisinsight_tess
-      ports:
-        - "5540:5540"
-      # networks:
-      #   - backend_net
-      restart: unless-stopped
+    image: redis/redisinsight:latest
+    container_name: redisinsight_tess
+    ports:
+      - "5540:5540"
+    restart: unless-stopped
+
 volumes:
   pgvector_data:

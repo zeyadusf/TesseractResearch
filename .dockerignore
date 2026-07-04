@@ -1,0 +1,12 @@
+.env
+.env.example
+scrt/
+**/__pycache__/
+**/*.pyc
+.git
+.gitignore
+.vscode/
+test/
+frontend/
+README.md
+LICENSE
