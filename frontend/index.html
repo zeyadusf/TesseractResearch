@@ -4,15 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TesseractResearch</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 28 28' fill='none' xmlns='http://www.w3.org/2000/svg'><polygon points='4,8 14,3 24,8 24,20 14,25 4,20' fill='none' stroke='%233B82F6' stroke-width='1.2'/><polygon points='9,11 14,8 19,11 19,17 14,20 9,17' fill='none' stroke='%2322D3EE' stroke-width='1'/><line x1='4' y1='8' x2='9' y2='11' stroke='%2360A5FA' stroke-width='0.8' opacity='0.7'/><line x1='24' y1='8' x2='19' y2='11' stroke='%2360A5FA' stroke-width='0.8' opacity='0.7'/><line x1='24' y1='20' x2='19' y2='17' stroke='%2360A5FA' stroke-width='0.8' opacity='0.7'/><line x1='4' y1='20' x2='9' y2='17' stroke='%2360A5FA' stroke-width='0.8' opacity='0.7'/><circle cx='14' cy='14' r='1.5' fill='%2322D3EE'/></svg>">
+
 <style>
   :root{
     --bg:#0f1117;
     --sidebar-bg:#161b27;
     --surface:#1c2333;
+    --surface-2:#212a3d;
     --border:#2a3448;
     --primary:#3B82F6;
     --cyan:#22D3EE;
+    --violet:#8B5CF6;
+    --pink:#ec4899;
+    --accent: #00f0ff;
+    --accent-purple: #7b2cbf;
+    --accent-grad: linear-gradient(135deg, var(--accent), var(--accent-purple));
     --gradient:linear-gradient(135deg,#3B82F6,#22D3EE);
+    --gradient-2:linear-gradient(135deg,#8B5CF6,#3B82F6 55%,#22D3EE);
+    --gradient-3:linear-gradient(135deg,#22D3EE,#8B5CF6);
+    --gradient-4:linear-gradient(135deg,#ec4899,#8B5CF6 55%,#3B82F6);
+    --gradient-5:linear-gradient(135deg,#f59e0b,#ec4899 60%,#8B5CF6);
+    --gradient-warm:linear-gradient(135deg,#f59e0b,#ec4899);
+    --gradient-cool:linear-gradient(135deg,#22D3EE,#3B82F6);
     --text:#e8eaf0;
     --text-secondary:#8b95a8;
     --text-muted:#4a5568;
@@ -27,12 +41,29 @@
   body{
     margin:0;
     font-family:system-ui,-apple-system,sans-serif;
-    background:var(--bg);
+    background:
+      radial-gradient(ellipse 900px 500px at -10% -10%, #3B82F61a, transparent 60%),
+      radial-gradient(ellipse 700px 500px at 110% 10%, #8B5CF61a, transparent 55%),
+      radial-gradient(ellipse 800px 600px at 50% 120%, #ec489912, transparent 60%),
+      radial-gradient(ellipse 800px 600px at 50% 120%, #22D3EE12, transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
     color:var(--text);
     font-weight:400;
     overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
   }
-  #app{display:flex;height:100vh;width:100vw;}
+  #app{display:flex;height:100vh;width:100vw;position:relative;}
+  ::selection{background:#3B82F655;color:#fff;}
+  *{scrollbar-width:thin;scrollbar-color:#3B82F680 transparent;}
+  *::-webkit-scrollbar{width:8px;height:8px;}
+  *::-webkit-scrollbar-track{background:transparent;}
+  *::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B82F680,#22D3EE80);border-radius:8px;}
+  *::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#3B82F6,#22D3EE);}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  }
 
   /* ---------- Sidebar ---------- */
   #sidebar{
@@ -52,7 +83,25 @@
     border-bottom:1px solid var(--border);
   }
   .sidebar-header .logo-glow svg{filter:drop-shadow(0 0 4px #3B82F680);}
-  .brand-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* .brand-name{
+    font-size:14px;
+    font-weight:500;
+    white-space:nowrap;
+    color:var(--accent-grad);
+    background:var(--accent-grad);
+    overflow:hidden;text-overflow:ellipsis;} */
+    .brand-name{
+    font-weight: 600;
+    font-size: 1.15rem;
+    background: var(--accent-grad);
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
   .version-badge{
     font-size:10px;color:var(--text-muted);border:1px solid var(--border);
     border-radius:6px;padding:2px 6px;margin-left:auto;flex-shrink:0;
@@ -77,10 +126,10 @@
   .session-item:hover{background:#1c233388;}
   .session-item.active{background:var(--surface);border-left:2px solid var(--primary);}
   .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .status-dot.running{background:var(--primary);animation:pulse 1.4s infinite;}
-  .status-dot.waiting{background:var(--amber);}
-  .status-dot.complete{background:var(--green);}
-  .status-dot.failed{background:var(--red);}
+  .status-dot.running{background:var(--gradient);animation:pulse 1.4s infinite;}
+  .status-dot.waiting{background:var(--gradient-warm);}
+  .status-dot.complete{background:linear-gradient(135deg,var(--green),#4ade80);}
+  .status-dot.failed{background:linear-gradient(135deg,var(--red),#f87171);}
   @keyframes pulse{0%{box-shadow:0 0 0 0 #3B82F666;}70%{box-shadow:0 0 0 6px #3B82F600;}100%{box-shadow:0 0 0 0 #3B82F600;}}
   .session-meta{display:flex;flex-direction:column;overflow:hidden;flex:1;}
   .session-title{font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -91,15 +140,44 @@
     border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px;
   }
   .avatar{
-    width:28px;height:28px;border-radius:50%;background:var(--gradient);
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;
+    width:32px;height:32px;border-radius:50%;background:var(--gradient-4);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;
+    transition:transform .15s,box-shadow .15s;box-shadow:0 0 0 2px transparent;
   }
-  .footer-name{font-size:12.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+  .footer-identity{
+    display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:none;border:none;
+    padding:4px;margin:-4px;border-radius:8px;cursor:pointer;text-align:left;transition:background .15s;
+  }
+  .footer-identity:hover{background:#ffffff08;}
+  .footer-identity:hover .avatar{transform:scale(1.06);box-shadow:0 0 0 2px #ec489940;}
+.footer-name {
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+
+    background: var(--accent-grad);
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
   .icon-btn{
     background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;
     display:flex;align-items:center;justify-content:center;border-radius:6px;
   }
   .icon-btn:hover{color:var(--text-secondary);background:#ffffff0a;}
+
+  /* ---------- Mobile top bar (hidden on desktop) ---------- */
+  #mobile-topbar{
+    display:none;position:fixed;top:0;left:0;right:0;height:52px;z-index:60;
+    background:var(--sidebar-bg);border-bottom:1px solid var(--border);
+    align-items:center;gap:10px;padding:0 10px;
+  }
+  #mobile-topbar .brand-name{font-size:13.5px;}
+  #mobile-topbar .spacer{flex:1;}
 
   /* ---------- Main ---------- */
   #main{flex:1;position:relative;overflow:auto;}
@@ -107,6 +185,7 @@
     position:absolute;inset:0;display:flex;
     opacity:0;transform:translateY(8px);pointer-events:none;
     transition:opacity .2s ease,transform .2s ease;
+    overflow-y:auto;
   }
   .view.visible{opacity:1;transform:translateY(0);pointer-events:auto;}
 
@@ -115,7 +194,7 @@
   .input-box{width:100%;max-width:640px;padding:24px;}
   .input-headline{font-size:28px;font-weight:500;color:var(--text);text-align:center;margin:0 0 8px;}
   .input-headline .accent{
-    background:var(--gradient);-webkit-background-clip:text;background-clip:text;color:transparent;
+    background:var(--gradient-2);-webkit-background-clip:text;background-clip:text;color:transparent;
   }
   .input-sub{font-size:14px;color:var(--text-secondary);text-align:center;margin:0 0 28px;}
   textarea#query-input{
@@ -133,12 +212,16 @@
     border:1px solid var(--border);border-radius:20px;padding:7px 14px;cursor:pointer;
     transition:background .15s,color .15s,border-color .15s;
   }
-  .quick-chip:hover{color:var(--text);border-color:var(--cyan);background:#1c233388;}
+  .quick-chip:hover{color:var(--text);background:#1c233388;}
+  .quick-chip:nth-child(3n+1):hover{border-color:var(--cyan);}
+  .quick-chip:nth-child(3n+2):hover{border-color:var(--violet);}
+  .quick-chip:nth-child(3n+3):hover{border-color:var(--pink);}
   .btn-primary{
     width:100%;margin-top:14px;padding:13px;border:none;border-radius:var(--radius-sm);
-    background:var(--gradient);color:#fff;font-size:15px;font-weight:500;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;
+    background:var(--gradient-2);color:#fff;font-size:15px;font-weight:500;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s,transform .1s;
   }
+  .btn-primary:active:not(:disabled){transform:scale(.98);}
   .btn-primary:hover{filter:brightness(1.08);}
   .btn-primary:disabled{opacity:.5;cursor:not-allowed;filter:none;}
   .error-banner{
@@ -167,10 +250,10 @@
   .step-desc{font-size:12px;color:var(--text-muted);margin-top:2px;}
   .step.waiting .step-icon{border-color:var(--border);color:var(--text-muted);}
   .step.active{background:transparent;}
-  .step.active .step-icon{background:#1c3a6e;border-color:var(--primary);color:var(--primary);animation:pulse 1.4s infinite;}
-  .step.active .step-name{color:var(--text);}
+  .step.active .step-icon{background:linear-gradient(135deg,#1c3a6e,#2a2a5e);border-color:var(--primary);color:#7cb3ff;animation:pulse 1.4s infinite;box-shadow:0 0 0 1px #8B5CF640;}
+  .step.active .step-name{background:var(--gradient-2);-webkit-background-clip:text;background-clip:text;color:transparent;}
   .step.active .step-desc{color:var(--text-secondary);}
-  .step.done .step-icon{background:#0f2a1e;border-color:#22D3EE40;color:var(--cyan);}
+  .step.done .step-icon{background:linear-gradient(135deg,#0f2a1e,#0f2a2e);border-color:#22D3EE40;color:var(--cyan);}
   .step.done .step-name{color:var(--text-muted);}
   .step.failed .step-icon{background:#3b1f24;border-color:var(--red);color:var(--red);}
   .step.failed .step-name{color:#fca5a5;}
@@ -195,7 +278,7 @@
   .source-snippet{font-size:11.5px;color:var(--text-secondary);line-height:1.5;margin-top:2px;}
   .source-meta-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
   .source-score{
-    font-size:11px;background:#1c3a6e;color:var(--primary);
+    font-size:11px;background:linear-gradient(135deg,#1c3a6e,#20305e);color:#7cb3ff;
     padding:2px 7px;border-radius:6px;
   }
   .source-provider{font-size:10.5px;color:var(--text-muted);border:1px solid var(--border);padding:2px 7px;border-radius:6px;}
@@ -209,7 +292,7 @@
   }
   .btn-ghost:hover{background:#ffffff0a;}
   .btn-approve{
-    padding:9px 18px;border:none;border-radius:var(--radius-sm);background:var(--gradient);
+    padding:9px 18px;border:none;border-radius:var(--radius-sm);background:var(--gradient-2);
     color:#fff;font-size:13px;font-weight:500;cursor:pointer;transition:filter .15s;
   }
   .btn-approve:hover{filter:brightness(1.08);}
@@ -226,30 +309,82 @@
   .report-back:hover{color:var(--text-secondary);}
   .report-topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
   .badge-complete{
-    font-size:11.5px;background:#0f2a1e;color:var(--green);border:1px solid #22c55e40;
+    font-size:11.5px;background:linear-gradient(135deg,#0f2a1e,#123324);color:#4ade80;border:1px solid #22c55e40;
     padding:4px 10px;border-radius:6px;
   }
   .badge-failed{
-    font-size:11.5px;background:#3b1f24;color:var(--red);border:1px solid #ef444440;
+    font-size:11.5px;background:linear-gradient(135deg,#3b1f24,#3f1a2a);color:#f87171;border:1px solid #ef444440;
     padding:4px 10px;border-radius:6px;
   }
   .btn-download{margin-left:auto;}
-  .report-layout{display:flex;gap:24px;align-items:flex-start;}
+
+  /* Report layout — flexbox, not grid.
+     A grid with a row-spanning "content" cell forces the grid to stretch
+     the toc/sources/notes rows to add up to content's full height, which
+     is exactly what created the big empty gaps between them. Flexbox
+     sizes each box by its own content instead, so they sit right under
+     each other. #rail-group is unwrapped (display:contents) on mobile so
+     its three children become plain flex items that can each be ordered
+     independently (Agenda → Report → Sources → Notes); on desktop it
+     becomes a real flex column so the three boxes stack tightly on their
+     own, at their own height, next to the report card. */
+  .report-layout{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+  #report-content{order:2;min-width:0;}
+  #rail-group{display:contents;}
+  #rail-toc{order:1;}
+  #rail-sources{order:3;}
+  #rail-notes{order:4;}
+  /* an empty rail slot (no TOC/sources/notes in this report) collapses
+     completely instead of leaving a gap — this used to be forced via an
+     inline style from JS, which silently defeated every breakpoint below */
+  .rail-slot:empty{display:none;}
+
+  @media(min-width:1101px){
+    .report-layout{flex-direction:row;align-items:flex-start;}
+    #report-content{order:1;flex:1;}
+    #rail-group{
+      display:flex;flex-direction:column;gap:20px;
+      width:240px;flex-shrink:0;order:2;
+    }
+  }
+
   .report-card{
-    flex:1;min-width:0;
     background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
     padding:24px;animation:fadeIn .3s ease;
   }
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-  .report-card h1{font-size:20px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;margin:0 0 16px;}
+  .report-card h1{font-size:20px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;margin:0 0 16px;scroll-margin-top:20px;}
   .report-card h2{font-size:15px;font-weight:500;color:var(--text);margin:22px 0 10px;scroll-margin-top:20px;}
+  .report-card h3{font-size:14px;font-weight:500;color:var(--text);margin:16px 0 8px;scroll-margin-top:20px;}
+  .report-card h4,.report-card h5,.report-card h6{font-size:13px;font-weight:600;color:var(--text-secondary);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.03em;scroll-margin-top:20px;}
   .report-card p{font-size:14px;color:var(--text-secondary);line-height:1.7;margin:0 0 12px;}
-  .report-card ul{margin:0 0 14px;padding-left:20px;}
+  .report-card ul,.report-card ol{margin:0 0 14px;padding-left:20px;}
   .report-card li{font-size:14px;color:var(--text-secondary);line-height:1.7;margin-bottom:4px;}
   .report-card li::marker{color:var(--cyan);}
+  .report-card ol li::marker{color:var(--violet);font-weight:600;}
   .report-card a{color:var(--cyan);text-decoration:none;}
   .report-card a:hover{text-decoration:underline;}
   .report-card strong{color:var(--text);font-weight:500;}
+  .report-card hr{
+    border:none;height:1px;margin:20px 0;
+    background:linear-gradient(90deg,var(--border),#3B82F660,var(--border));
+  }
+  .report-card code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+    background:#0f131f;color:var(--cyan);border:1px solid var(--border);
+    padding:1px 5px;border-radius:4px;
+  }
+  .report-card pre{
+    background:#0f131f;border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 14px;overflow-x:auto;margin:0 0 14px;
+  }
+  .report-card pre code{
+    background:none;border:none;padding:0;color:var(--text-secondary);font-size:12.5px;line-height:1.6;
+  }
   .report-card blockquote{
     margin:0 0 14px;padding:8px 14px;border-left:2px solid var(--primary);
     background:#13182666;color:var(--text-secondary);font-size:13px;font-style:italic;line-height:1.6;
@@ -261,10 +396,12 @@
   .report-card th{color:var(--text);font-weight:500;background:#161b27;}
   .report-card tr:nth-child(even) td{background:#ffffff03;}
 
-  /* right rail: on-this-page / sources / notes */
-  .report-rail{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:20px;}
+  /* rail boxes: agenda / sources / notes */
   .rail-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
-  .rail-title{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .rail-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  #rail-toc .rail-title{color:var(--cyan);}
+  #rail-sources .rail-title{color:var(--violet);}
+  #rail-notes .rail-title{color:var(--pink);}
   .toc-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
   .toc-list a{font-size:12.5px;color:var(--text-secondary);text-decoration:none;}
   .toc-list a:hover{color:var(--cyan);}
@@ -272,7 +409,7 @@
   .sources-list li{counter-increment:src;font-size:12px;}
   .sources-list li::before{content:counter(src)". ";color:var(--text-muted);}
   .sources-list .src-title{color:var(--text);display:block;}
-  .sources-list a{color:var(--cyan);text-decoration:none;font-size:11px;word-break:break-all;}
+  .sources-list a{color:var(--violet);text-decoration:none;font-size:11px;word-break:break-all;}
   .sources-list a:hover{text-decoration:underline;}
   .notes-box p{font-size:12.5px;color:var(--text-secondary);line-height:1.6;margin:0;}
 
@@ -299,6 +436,8 @@
   }
   #settings-popover input:focus{border-color:var(--cyan);}
   #settings-popover .btn-primary{margin-top:2px;padding:8px;font-size:12.5px;}
+  #settings-popover .client-id-row{font-size:10.5px;color:var(--text-muted);word-break:break-all;line-height:1.5;}
+  #settings-popover .client-id-row span{color:var(--text-secondary);}
 
   /* toast */
   #toast{
@@ -309,26 +448,129 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* Responsive */
-  @media(max-width:1100px){
-    .report-rail{display:none;}
+  /* ---------- About overlay ---------- */
+  .about-backdrop{
+    position:fixed;inset:0;background:#05070dad;backdrop-filter:blur(4px);
+    z-index:90;opacity:0;pointer-events:none;transition:opacity .2s ease;
   }
+  .about-backdrop.open{opacity:1;pointer-events:auto;}
+  #about-view{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-48%);
+    width:92vw;max-width:720px;max-height:86vh;overflow-y:auto;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:26px 26px 30px;z-index:91;opacity:0;pointer-events:none;
+    box-shadow:0 20px 60px -20px #000000a0;
+    transition:opacity .2s ease,transform .2s ease;
+  }
+  #about-view.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%);}
+  .about-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+  .about-header h2{font-size:1.15rem;font-weight:500;margin:0;}
+  .about-header .logo-text{
+    background:var(--gradient-2);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;
+  }
+  .author-card{
+    display:flex;align-items:flex-start;gap:16px;padding:18px;margin-bottom:16px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);
+    position:relative;overflow:hidden;
+  }
+  .author-card::before{
+    content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;
+    background:var(--gradient-2);opacity:.35;
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+  }
+  .author-avatar{
+    width:52px;height:52px;border-radius:50%;background:var(--gradient-3);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;
+  }
+  .author-name{font-size:15px;font-weight:600;color:var(--text);}
+  .author-role{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+  .social-links{display:flex;flex-wrap:wrap;gap:8px;}
+  .social-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;
+    padding:6px 12px;text-decoration:none;transition:border-color .15s,color .15s,transform .15s;
+  }
+  .social-link svg{width:13px;height:13px;flex-shrink:0;}
+  .social-link:hover{color:var(--text);border-color:var(--cyan);transform:translateY(-1px);}
+  .about-view-card{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:18px;margin-bottom:14px;
+  }
+  .about-view-card h4{
+    color:var(--cyan);margin:0 0 14px;font-size:.85rem;font-weight:600;
+    display:flex;align-items:center;gap:6px;
+  }
+  .about-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;}
+  .about-tech-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:12px 14px;display:flex;flex-direction:column;gap:7px;transition:border-color .15s,transform .15s;
+  }
+  .about-tech-card:hover{border-color:#3B82F660;transform:translateY(-2px);}
+  .about-tech-title{font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:1px;}
+  .about-tech-row{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:7px;}
+  .about-tech-dot{width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0;}
+  .about-tech-dot.purple{background:var(--violet);}
+  .about-tech-dot.green{background:var(--green);}
+  .about-tech-dot.yellow{background:var(--amber);}
+  .about-tech-dot.cyan{background:var(--cyan);}
+  .about-tech-dot.pink{background:var(--pink);}
+  .about-release-row{display:flex;gap:20px;flex-wrap:wrap;}
+  .about-release-item{font-size:.8rem;}
+  .about-release-item span{color:var(--text-muted);}
+  .about-release-item div{font-weight:700;margin-top:3px;color:var(--text);}
+
+  .projects-card{ background:#161b27; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px; } .projects-title{ font-size:15px; font-weight:600; margin:0 0 16px; color:#fff; } .project-item{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); } .project-item:last-child{ border-bottom:none; padding-bottom:0; } .project-left{ min-width:0; } .project-link{ display:flex; align-items:center; gap:10px; text-decoration:none; } .project-icon{ width:16px; height:16px; color:#00f0ff; flex-shrink:0; } .project-name{ font-size:14px; font-weight:500; background:linear-gradient(135deg,#00f0ff,#7b2cbf); background-clip:text; -webkit-background-clip:text; color:transparent; -webkit-text-fill-color:transparent; } .project-meta{ display:flex; align-items:center; gap:10px; flex-shrink:0; } .project-version{ font-size:12px; color:#cbd5e1; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.06); } .project-license{ font-size:12px; color:#00f0ff; }
+  /* Responsive */
   @media(max-width:768px){
-    #sidebar{width:64px;}
-    .brand-name,.version-badge,.section-label,.session-meta,.footer-name{display:none;}
-    .sidebar-header{justify-content:center;}
-    .btn-new{padding:10px 0;font-size:0;}
-    .btn-new svg{margin:0;}
-    .session-item{justify-content:center;padding:9px;}
-    .sidebar-footer{justify-content:center;}
-    #settings-popover{left:10px;width:200px;}
+    body{overflow:auto;}
+    #app{position:relative;}
+    #mobile-topbar{display:flex;}
+    #sidebar{
+      position:fixed;top:0;left:0;bottom:0;width:82vw;max-width:300px;z-index:80;
+      transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px #00000080;
+    }
+    #sidebar.open{transform:translateX(0);}
+    #sidebar-backdrop{
+      position:fixed;inset:0;background:#05070dad;z-index:75;
+      opacity:0;pointer-events:none;transition:opacity .2s ease;
+    }
+    #sidebar-backdrop.open{opacity:1;pointer-events:auto;}
+    #main{padding-top:52px;}
+    #btn-close-sidebar{display:flex !important;margin-left:auto;}
     .input-headline{font-size:22px;}
-    .approval-card{width:94vw;}
+    .input-box{padding:16px;}
+    .approval-card{width:94vw;max-height:88vh;}
     .quick-chips{flex-wrap:wrap;}
+    #view-report{padding:20px 14px;}
+    .report-topbar{flex-wrap:wrap;gap:8px;}
+    .report-card{padding:16px;}
+    #about-view{padding:20px 18px 24px;width:94vw;}
+    .author-card{flex-direction:column;align-items:flex-start;}
+    .about-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:460px){
+    .about-grid{grid-template-columns:1fr;}
+    .input-headline{font-size:19px;}
+    .step-desc{display:none;}
   }
 </style>
 </head>
 <body>
+
+<!-- MOBILE TOP BAR -->
+<div id="mobile-topbar">
+  <button class="icon-btn" id="btn-menu" aria-label="Open menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="brand-name">TesseractResearch</span>
+  <span class="spacer"></span>
+  <button class="icon-btn" id="btn-mobile-new" aria-label="New research">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
+<div id="sidebar-backdrop"></div>
+
 <div id="app">
 
   <!-- SIDEBAR -->
@@ -349,6 +591,9 @@
       </span>
       <span class="brand-name">TesseractResearch</span>
       <span class="version-badge">v1.0</span>
+      <button class="icon-btn" id="btn-close-sidebar" aria-label="Close menu" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <div class="sidebar-body">
@@ -363,15 +608,32 @@
     </div>
 
     <div class="sidebar-footer" style="position:relative;">
-      <div class="avatar" id="user-avatar">Z</div>
-      <span class="footer-name">Zeyad</span>
-      <button class="icon-btn" id="btn-settings" title="Settings">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <button class="footer-identity" id="btn-about" title="About TesseractResearch">
+        <div  id="app-avatar" aria-hidden="true">
+          <span class="logo-glow">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+            <polygon points="4,8 14,3 24,8 24,20 14,25 4,20" fill="none" stroke="#3B82F6" stroke-width="1.2" stroke-linejoin="round"/>
+            <polygon points="9,11 14,8 19,11 19,17 14,20 9,17" fill="none" stroke="#22D3EE" stroke-width="1" stroke-linejoin="round"/>
+            <line x1="4" y1="8" x2="9" y2="11" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <line x1="24" y1="8" x2="19" y2="11" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <line x1="24" y1="20" x2="19" y2="17" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <line x1="4" y1="20" x2="9" y2="17" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <line x1="14" y1="3" x2="14" y2="8" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <line x1="14" y1="25" x2="14" y2="20" stroke="#60A5FA" stroke-width="0.8" opacity="0.7"/>
+            <circle cx="14" cy="14" r="1.5" fill="#22D3EE" opacity="0.9"/>
+          </svg>
+        </span>
+        </div>
+        <span class="footer-name">About TesseractResearch</span>
       </button>
+      <!-- <button class="icon-btn" id="btn-settings" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button> -->
       <div id="settings-popover">
         <label>Api base url</label>
         <input type="text" id="api-base-input" placeholder="http://localhost:8000">
         <button class="btn-primary" id="btn-save-api">Save</button>
+        <div class="client-id-row">Client ID: <span id="client-id-display"></span></div>
       </div>
     </div>
   </aside>
@@ -405,7 +667,6 @@
         <p class="progress-title" id="progress-title">Running research pipeline…</p>
         <div class="steps" id="steps-container"></div>
         <div class="error-banner" id="progress-error" style="display:none;"></div>
-        <!-- <button class="btn-ghost" id="btn-refresh-status" style="margin-top:18px;">Refresh status</button> -->
       </div>
     </section>
 
@@ -435,9 +696,17 @@
           <span class="badge-complete" id="report-badge">Research complete</span>
           <button class="btn-ghost btn-download" id="btn-download">Download .md</button>
         </div>
-        <div class="report-layout">
+        <!-- Order on screen: Agenda -> Report -> Sources -> Notes on mobile
+             (via CSS `order`, #rail-group unwrapped with display:contents),
+             and Report | Agenda/Sources/Notes side-by-side on desktop
+             (#rail-group becomes a real flex column). -->
+        <div class="report-layout" id="report-layout">
           <div class="report-card" id="report-content"></div>
-          <aside class="report-rail" id="report-rail"></aside>
+          <div id="rail-group">
+            <aside class="rail-slot" id="rail-toc"></aside>
+            <aside class="rail-slot" id="rail-sources"></aside>
+            <aside class="rail-slot" id="rail-notes"></aside>
+          </div>
         </div>
       </div>
     </section>
@@ -446,6 +715,124 @@
 </div>
 
 <div id="toast"></div>
+
+<div class="about-backdrop" id="about-backdrop"></div>
+<div id="about-view" role="dialog" aria-modal="true" aria-label="About TesseractResearch">
+  <div class="about-header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+        <polygon points="4,8 14,3 24,8 24,20 14,25 4,20" fill="none" stroke="#3B82F6" stroke-width="1.2" stroke-linejoin="round"/>
+        <polygon points="9,11 14,8 19,11 19,17 14,20 9,17" fill="none" stroke="#22D3EE" stroke-width="1" stroke-linejoin="round"/>
+        <circle cx="14" cy="14" r="1.5" fill="#22D3EE" opacity="0.9"/>
+      </svg>
+      <h2>About <span class="logo-text">TesseractResearch</span></h2>
+    </div>
+    <button class="icon-btn" id="btn-close-about" aria-label="Close">✕</button>
+  </div>
+
+  <div class="author-card">
+    <div class="author-avatar">ZE</div>
+    <div style="flex:1;min-width:0;">
+      <div class="author-name">Zeyad Elsayed</div>
+      <div class="author-role">AI/ML Engineer · TesseractResearch</div>
+      <div style="margin-top:12px;">
+        <div class="social-links">
+          <a class="social-link" href="https://github.com/zeyadusf" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            zeyadusf
+          </a>
+          <a class="social-link" href="https://www.linkedin.com/in/zeyadusf/" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            zeyadusf
+          </a>
+          <a class="social-link" href="https://zeyadusf.github.io/" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Portfolio
+          </a>
+          <a class="social-link" href="https://www.instagram.com/zeyadusf" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+            @zeyadusf
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-view-card">
+    <h4>⚙️ Technology stack</h4>
+    <div class="about-grid">
+      <div class="about-tech-card">
+        <div class="about-tech-title">🕸️ Agent orchestration</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> LangGraph state graph</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> Human-in-the-loop via interrupt()</div>
+        <div class="about-tech-row"><span class="about-tech-dot green"></span> AsyncPostgresSaver checkpointing</div>
+      </div>
+      <div class="about-tech-card">
+        <div class="about-tech-title">🔎 Search &amp; scraping</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> Tavily → Serper dispatcher</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> Firecrawl provider</div>
+        <div class="about-tech-row"><span class="about-tech-dot cyan"></span> Redis usage-tracked quotas</div>
+      </div>
+      <div class="about-tech-card">
+        <div class="about-tech-title">🤖 Language models</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> Groq - Mistral(primary)</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> HuggingFace - Cerebras (fallback)</div>
+        <div class="about-tech-row"><span class="about-tech-dot yellow"></span> Per-node LLM dispatcher</div>
+      </div>
+      <div class="about-tech-card">
+        <div class="about-tech-title">🗄️ Data layer</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> PostgreSQL + pgvector</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> Alembic migrations</div>
+        <!-- <div class="about-tech-row"><span class="about-tech-dot green"></span> Redis caching</div> -->
+      </div>
+      <div class="about-tech-card">
+        <div class="about-tech-title">🚀 Backend</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> FastAPI + async SQLAlchemy DI</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> Server-sent events (SSE)</div>
+        <div class="about-tech-row"><span class="about-tech-dot pink"></span> Anonymous client isolation</div>
+      </div>
+      <div class="about-tech-card">
+        <div class="about-tech-title">🖥️ Frontend</div>
+        <div class="about-tech-row"><span class="about-tech-dot"></span> Vanilla HTML / CSS / JS</div>
+        <div class="about-tech-row"><span class="about-tech-dot purple"></span> Real-time SSE pipeline view</div>
+        <div class="about-tech-row"><span class="about-tech-dot green"></span> From-scratch markdown renderer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-view-card" style="margin-bottom:0;">
+    <h4>📦 Release</h4>
+    <div class="about-release-row">
+      <div class="about-release-item"><span>Version</span><div>v1.0</div></div>
+      <div class="about-release-item"><span>License</span><div>MIT</div></div>
+    </div>
+  </div>
+  <div class="about-view-card" style="margin-bottom:0;margin-top: 15px;">
+    <h3 class="brand-name">Tesseract Projects</h3> 
+    <div class="projects-card">
+  <div class="project-item"> 
+    <div class="project-left"> 
+      <a href="https://tesseractrag.ziayd-usf.workers.dev/" class="project-link">
+        <svg class="project-icon" viewBox="0 0 24 24" fill="none"> <path d="M14 3H21V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> <path d="M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> <path d="M21 14V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> </svg> 
+        <span class="project-name">TesseractRag</span> </a> </div>
+          <div class="project-meta">
+          <span class="project-version">v2.0</span> 
+          <span class="project-license">MIT License</span>
+        </div>
+      </div>
+      <div class="project-item"> 
+        <div class="project-left"> 
+          <a href="#" class="project-link"> <svg class="project-icon" viewBox="0 0 24 24" fill="none"> <path d="M14 3H21V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> <path d="M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> <path d="M21 14V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3 3 5 3H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> </svg> 
+            <span class="project-name">TesseractResearch</span> 
+          </a> 
+        </div> 
+        <div class="project-meta"> 
+          <span class="project-version">v1.0</span> 
+          <span class="project-license">MIT License</span> 
+        </div> 
+      </div> 
+    </div>
+</div>
 
 <script>
 (function(){
@@ -457,12 +844,38 @@
     : "http://localhost:8000";
   let apiBase = localStorage.getItem("tr_api_base") || DEFAULT_API_BASE;
 
+  /* ---------------- anonymous client id ----------------
+     Persistent per-browser id, generated once with crypto.randomUUID()
+     and stored in localStorage. Sent with every request (as a header and
+     as a query param, so it works for both fetch() and EventSource) so
+     the backend can isolate each visitor's research history without
+     requiring a login. */
+  function generateUUID(){
+    if(window.crypto && typeof crypto.randomUUID === "function"){
+      return crypto.randomUUID();
+    }
+    // Fallback for older browsers without crypto.randomUUID
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{
+      const r = Math.random()*16|0, v = c==="x" ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+  function getClientId(){
+    let id = null;
+    try{ id = localStorage.getItem("tr_client_id"); }catch(e){}
+    if(!id){
+      id = generateUUID();
+      try{ localStorage.setItem("tr_client_id", id); }catch(e){}
+    }
+    return id;
+  }
+  const clientId = getClientId();
+
   /* ---------------- state ---------------- */
   let sessions = loadSessions();     // array of {id, query, status, current_step, approval_required, createdAt}
   let currentSessionId = null;
   let currentView = "input";
   let eventSource = null;
-  let lastRenderedStep = null;
 
   const STEP_DEFS = [
     {key:"planning",  name:"Planning",           desc:"Breaking the query into a research plan",      match:s=>/plan/i.test(s)},
@@ -513,9 +926,14 @@
     if(status === "failed") return "failed";
     return "running";
   }
+  function withClientId(url){
+    const sep = url.includes("?") ? "&" : "?";
+    return url + sep + "client_id=" + encodeURIComponent(clientId);
+  }
   async function apiFetch(path, options){
-    const res = await fetch(apiBase.replace(/\/$/,"") + path, Object.assign({
-      headers:{"Content-Type":"application/json"}
+    const url = withClientId(apiBase.replace(/\/$/,"") + path);
+    const res = await fetch(url, Object.assign({
+      headers:{"Content-Type":"application/json", "X-Client-Id":clientId}
     }, options));
     if(!res.ok){
       let detail = res.statusText;
@@ -532,6 +950,47 @@
       document.getElementById("view-"+v).classList.toggle("visible", v===name);
     });
   }
+
+  /* ---------------- mobile sidebar menu ---------------- */
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+  function openSidebarMenu(){
+    sidebarEl.classList.add("open");
+    sidebarBackdrop.classList.add("open");
+  }
+  function closeSidebarMenu(){
+    sidebarEl.classList.remove("open");
+    sidebarBackdrop.classList.remove("open");
+  }
+  document.getElementById("btn-menu").addEventListener("click", openSidebarMenu);
+  document.getElementById("btn-close-sidebar").addEventListener("click", closeSidebarMenu);
+  sidebarBackdrop.addEventListener("click", closeSidebarMenu);
+  document.getElementById("btn-mobile-new").addEventListener("click", ()=>{
+    closeSidebarMenu();
+    document.getElementById("btn-new-research").click();
+  });
+
+  /* ---------------- about modal ---------------- */
+  const aboutBackdrop = document.getElementById("about-backdrop");
+  const aboutView = document.getElementById("about-view");
+  function openAbout(){
+    aboutBackdrop.classList.add("open");
+    aboutView.classList.add("open");
+  }
+  function closeAbout(){
+    aboutBackdrop.classList.remove("open");
+    aboutView.classList.remove("open");
+  }
+  document.getElementById("btn-about").addEventListener("click", openAbout);
+  document.getElementById("btn-close-about").addEventListener("click", closeAbout);
+  aboutBackdrop.addEventListener("click", closeAbout);
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape"){
+      closeAbout();
+      closeSidebarMenu();
+      document.getElementById("settings-popover").classList.remove("open");
+    }
+  });
 
   /* ---------------- sidebar ---------------- */
   function renderSessionList(){
@@ -551,7 +1010,10 @@
           <span class="session-title">${escapeHtml(s.query || s.id)}</span>
           <span class="session-time">${relativeTime(s.createdAt)}</span>
         </span>`;
-      item.addEventListener("click", ()=>openSession(s.id));
+      item.addEventListener("click", ()=>{
+        closeSidebarMenu();
+        openSession(s.id);
+      });
       el.appendChild(item);
     });
   }
@@ -632,16 +1094,6 @@
     }
   });
 
-  // document.getElementById("btn-refresh-status").addEventListener("click", async ()=>{
-  //   if(!currentSessionId) return;
-  //   try{
-  //     const state = await apiFetch("/research/"+encodeURIComponent(currentSessionId));
-  //     handleStreamUpdate(currentSessionId, {step:state.current_step, status:state.status, approval_required:state.approval_required, errors:state.errors});
-  //   }catch(e){
-  //     toast(e.message, true);
-  //   }
-  // });
-
   document.getElementById("btn-new-research").addEventListener("click", ()=>{
     closeStream();
     currentSessionId = null;
@@ -690,7 +1142,7 @@
   }
   function connectStream(sessionId){
     closeStream();
-    const url = apiBase.replace(/\/$/,"") + "/research/" + encodeURIComponent(sessionId) + "/events";
+    const url = withClientId(apiBase.replace(/\/$/,"") + "/research/" + encodeURIComponent(sessionId) + "/events");
     try{
       eventSource = new EventSource(url);
     }catch(e){
@@ -876,11 +1328,15 @@
       showView("report");
       document.getElementById("report-badge").textContent = "Research complete";
       document.getElementById("report-badge").className = "badge-complete";
-      const {html, railHtml} = renderReport(res.report || "");
-      document.getElementById("report-content").innerHTML = html;
-      const rail = document.getElementById("report-rail");
-      rail.innerHTML = railHtml;
-      rail.style.display = railHtml ? "flex" : "none";
+      const {contentHtml, tocHtml, sourcesHtml, notesHtml} = renderReport(res.report || "");
+      // Each slot is populated (or left empty) independently; an empty
+      // slot collapses via the `:empty` CSS rule, and the visual order
+      // (Agenda -> Report -> Sources -> Notes on mobile) comes purely
+      // from grid-template-areas, so no inline styles are needed here.
+      document.getElementById("report-content").innerHTML = contentHtml;
+      document.getElementById("rail-toc").innerHTML = tocHtml;
+      document.getElementById("rail-sources").innerHTML = sourcesHtml;
+      document.getElementById("rail-notes").innerHTML = notesHtml;
       document.getElementById("btn-download").onclick = ()=>downloadMd(sessionId, res.report || "");
       upsertSession({id:sessionId, status:"completed", approval_required:false});
       toast("Report saved to this session");
@@ -914,13 +1370,44 @@
     return l.split("|").map(c=>c.trim());
   }
   function renderBlock(lines){
-    let html = ""; let inList = false;
-    function closeList(){ if(inList){ html += "</ul>"; inList = false; } }
+    let html = ""; let listType = null; // null | "ul" | "ol"
+    function closeList(){ if(listType){ html += "</"+listType+">"; listType = null; } }
     let i = 0;
     while(i < lines.length){
       const raw = lines[i];
       const l = raw.trim();
       if(l === ""){ closeList(); i++; continue; }
+
+      // Fenced code block: ``` ... ``` (language hint after the opening fence is ignored)
+      if(/^```/.test(l)){
+        closeList();
+        i++;
+        const codeLines = [];
+        while(i < lines.length && !/^```/.test(lines[i].trim())){
+          codeLines.push(lines[i]);
+          i++;
+        }
+        i++; // skip closing fence
+        html += `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`;
+        continue;
+      }
+
+      // Horizontal rule: a line of 3+ -, *, or _ (spacing between them is ignored,
+      // so "- - -" and "***" both count, matching how most renderers treat them)
+      if(/^([-*_])\1{2,}$/.test(l.replace(/\s+/g, ""))){
+        closeList();
+        html += "<hr>";
+        i++; continue;
+      }
+
+      // Some report generators emit a bare line of only '#' characters as an
+      // improvised section divider (instead of '---'). Treat that the same
+      // way, otherwise it falls through to a raw, uncompiled paragraph.
+      if(/^#+$/.test(l)){
+        closeList();
+        html += "<hr>";
+        i++; continue;
+      }
 
       // GFM table: header row followed by a separator row
       if(l.includes("|") && i+1 < lines.length && isSeparatorRow(lines[i+1])){
@@ -941,8 +1428,16 @@
       }
 
       let m;
-      if((m = l.match(/^#\s+(.*)/))){ closeList(); html += `<h1>${inline(m[1])}</h1>`; i++; continue; }
-      if((m = l.match(/^###\s+(.*)/))){ closeList(); html += `<h3 style="font-size:14px;color:var(--text);margin:16px 0 8px;">${inline(m[1])}</h3>`; i++; continue; }
+      // Any heading level 1-6, requiring real text after the hashes (a
+      // bare hash-only line is handled above as a divider instead).
+      // Trailing "closing" hashes ("## Title ##") are stripped too.
+      if((m = l.match(/^(#{1,6})\s+(.*)/))){
+        closeList();
+        const level = Math.min(m[1].length, 6);
+        const text = m[2].replace(/\s+#+\s*$/, "");
+        html += `<h${level}>${inline(text)}</h${level}>`;
+        i++; continue;
+      }
       if(/^>\s?/.test(l)){
         closeList();
         const quoteLines = [l.replace(/^>\s?/, "")];
@@ -954,8 +1449,15 @@
         html += `<blockquote>${inline(quoteLines.join(" "))}</blockquote>`;
         continue;
       }
+      // Ordered list: "1. text", "2) text", etc.
+      if((m = l.match(/^\d+[.)]\s+(.*)/))){
+        if(listType !== "ol"){ closeList(); html += "<ol>"; listType = "ol"; }
+        html += `<li>${inline(m[1])}</li>`;
+        i++; continue;
+      }
+      // Unordered list: "- text" or "* text" (but not "---"/"***" rules, already handled above)
       if((m = l.match(/^[-*]\s+(.*)/))){
-        if(!inList){ html += "<ul>"; inList = true; }
+        if(listType !== "ul"){ closeList(); html += "<ul>"; listType = "ul"; }
         html += `<li>${inline(m[1])}</li>`;
         i++; continue;
       }
@@ -985,14 +1487,19 @@
   }
   /* Splits the report into an intro block + `##`-level sections, pulls a
      "Sources" and/or "Notes" section (if the report actually has one) into
-     the right rail, and builds a table-of-contents from the real headings
-     that remain — nothing here is invented, only reorganized. */
+     their own separate rail slots, and builds a table-of-contents from the
+     real headings that remain — nothing here is invented, only reorganized.
+     Returns four independent HTML strings so each can be dropped into its
+     own DOM node (content / toc / sources / notes) and ordered purely
+     through CSS grid-template-areas. */
   function renderReport(md){
     const lines = md.replace(/\r\n/g, "\n").split("\n");
     const sections = [];
     let current = {title: null, lines: []};
+    let inFence = false;
     lines.forEach(line=>{
-      const m = line.match(/^##\s+(.*)/);
+      if(/^\s*```/.test(line)){ inFence = !inFence; current.lines.push(line); return; }
+      const m = !inFence && line.match(/^##\s+(.*)/);
       if(m){
         sections.push(current);
         current = {title: m[1].trim(), lines: []};
@@ -1008,45 +1515,47 @@
     const notesSection   = sections.find(s=>isNotes(s.title));
     const mainSections   = sections.filter(s=>s!==sourcesSection && s!==notesSection);
 
-    let html = "";
+    let contentHtml = "";
     const headings = [];
     mainSections.forEach(sec=>{
       if(sec.title){
         const id = "sec-" + slugify(sec.title);
         headings.push({id, text: sec.title});
-        html += `<h2 id="${id}">${inline(sec.title)}</h2>`;
+        contentHtml += `<h2 id="${id}">${inline(sec.title)}</h2>`;
       }
-      html += renderBlock(sec.lines);
+      contentHtml += renderBlock(sec.lines);
     });
 
-    let railHtml = "";
-    if(headings.length || sourcesSection || notesSection){
-      railHtml += `<div class="rail-box"><p class="rail-title">On this page</p><ul class="toc-list">`;
-      headings.forEach(h=>{ railHtml += `<li><a href="#${h.id}">${inline(h.text)}</a></li>`; });
-      if(sourcesSection) railHtml += `<li><a href="#rail-sources">${inline(sourcesSection.title)}</a></li>`;
-      if(notesSection) railHtml += `<li><a href="#rail-notes">${inline(notesSection.title)}</a></li>`;
-      railHtml += `</ul></div>`;
+    let tocHtml = "";
+    if(headings.length){
+      tocHtml = `<div class="rail-box"><p class="rail-title">📑 Agenda</p><ul class="toc-list">` +
+        headings.map(h=>`<li><a href="#${h.id}">${inline(h.text)}</a></li>`).join("") +
+        `</ul></div>`;
     }
+
+    let sourcesHtml = "";
     if(sourcesSection){
       const items = extractLinkItems(sourcesSection.lines);
       if(items.length){
-        railHtml += `<div class="rail-box" id="rail-sources"><p class="rail-title">Sources</p><ol class="sources-list">`;
-        items.forEach(it=>{
-          railHtml += `<li><span class="src-title">${escapeHtml(it.text)}</span>${it.url ? `<a href="${escapeHtml(it.url)}" target="_blank" rel="noopener">${escapeHtml(truncate(it.url, 42))}</a>` : ""}</li>`;
-        });
-        railHtml += `</ol></div>`;
+        sourcesHtml = `<div class="rail-box"><p class="rail-title">🔗 ${inline(sourcesSection.title)}</p><ol class="sources-list">` +
+          items.map(it=>`<li><span class="src-title">${escapeHtml(it.text)}</span>${it.url ? `<a href="${escapeHtml(it.url)}" target="_blank" rel="noopener">${escapeHtml(truncate(it.url, 42))}</a>` : ""}</li>`).join("") +
+          `</ol></div>`;
       }
     }
+
+    let notesHtml = "";
     if(notesSection){
       const text = notesSection.lines.map(l=>l.trim()).filter(Boolean).join(" ");
       if(text){
-        railHtml += `<div class="rail-box notes-box" id="rail-notes"><p class="rail-title">Notes</p><p>${inline(text)}</p></div>`;
+        notesHtml = `<div class="rail-box notes-box"><p class="rail-title">📝 ${inline(notesSection.title)}</p><p>${inline(text)}</p></div>`;
       }
     }
-    return {html, railHtml};
+
+    return {contentHtml, tocHtml, sourcesHtml, notesHtml};
   }
   function inline(text){
     let t = escapeHtml(text);
+    t = t.replace(/`([^`]+?)`/g, "<code>$1</code>");
     t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     t = t.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
     return t;
@@ -1079,6 +1588,7 @@
   /* ---------------- settings ---------------- */
   const settingsPopover = document.getElementById("settings-popover");
   const apiBaseInput = document.getElementById("api-base-input");
+  document.getElementById("client-id-display").textContent = clientId;
   document.getElementById("btn-settings").addEventListener("click", ()=>{
     apiBaseInput.value = apiBase;
     settingsPopover.classList.toggle("open");
