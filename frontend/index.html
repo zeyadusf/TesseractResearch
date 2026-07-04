@@ -355,6 +355,7 @@
   .report-card{
     background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
     padding:24px;animation:fadeIn .3s ease;
+    overflow-x:hidden;
   }
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   .report-card h1{font-size:20px;font-weight:500;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:12px;margin:0 0 16px;scroll-margin-top:20px;}
@@ -381,6 +382,7 @@
   .report-card pre{
     background:#0f131f;border:1px solid var(--border);border-radius:var(--radius-sm);
     padding:12px 14px;overflow-x:auto;margin:0 0 14px;
+    max-width:100%;
   }
   .report-card pre code{
     background:none;border:none;padding:0;color:var(--text-secondary);font-size:12.5px;line-height:1.6;
@@ -389,9 +391,17 @@
     margin:0 0 14px;padding:8px 14px;border-left:2px solid var(--primary);
     background:#13182666;color:var(--text-secondary);font-size:13px;font-style:italic;line-height:1.6;
   }
-  .report-card table{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:13px;}
+  .table-scroll{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    margin:0 0 16px;
+    border-radius:var(--radius-sm);
+  }
+  .report-card table{width:100%;border-collapse:collapse;margin:0;font-size:13px;}
   .report-card th,.report-card td{
     border:1px solid var(--border);padding:8px 10px;text-align:left;color:var(--text-secondary);
+    white-space:nowrap;
   }
   .report-card th{color:var(--text);font-weight:500;background:#161b27;}
   .report-card tr:nth-child(even) td{background:#ffffff03;}
@@ -1419,11 +1429,11 @@
           bodyRows.push(splitRow(lines[i]));
           i++;
         }
-        html += "<table><thead><tr>" + headerCells.map(c=>`<th>${inline(c)}</th>`).join("") + "</tr></thead><tbody>";
+        html += '<div class="table-scroll"><table><thead><tr>' + headerCells.map(c=>`<th>${inline(c)}</th>`).join("") + "</tr></thead><tbody>";
         bodyRows.forEach(row=>{
           html += "<tr>" + row.map(c=>`<td>${inline(c)}</td>`).join("") + "</tr>";
         });
-        html += "</tbody></table>";
+        html += "</tbody></table></div>";
         continue;
       }
 
@@ -1585,28 +1595,28 @@
     }
   }
 
-  /* ---------------- settings ---------------- */
-  const settingsPopover = document.getElementById("settings-popover");
-  const apiBaseInput = document.getElementById("api-base-input");
-  document.getElementById("client-id-display").textContent = clientId;
-  document.getElementById("btn-settings").addEventListener("click", ()=>{
-    apiBaseInput.value = apiBase;
-    settingsPopover.classList.toggle("open");
-  });
-  document.getElementById("btn-save-api").addEventListener("click", ()=>{
-    const v = apiBaseInput.value.trim();
-    if(v){
-      apiBase = v.replace(/\/$/,"");
-      localStorage.setItem("tr_api_base", apiBase);
-      toast("API base URL saved");
-    }
-    settingsPopover.classList.remove("open");
-  });
-  document.addEventListener("click", (e)=>{
-    if(!settingsPopover.contains(e.target) && e.target.id !== "btn-settings" && !e.target.closest("#btn-settings")){
-      settingsPopover.classList.remove("open");
-    }
-  });
+  // /* ---------------- settings ---------------- */
+  // const settingsPopover = document.getElementById("settings-popover");
+  // const apiBaseInput = document.getElementById("api-base-input");
+  // document.getElementById("client-id-display").textContent = clientId;
+  // document.getElementById("btn-settings").addEventListener("click", ()=>{
+  //   apiBaseInput.value = apiBase;
+  //   settingsPopover.classList.toggle("open");
+  // });
+  // document.getElementById("btn-save-api").addEventListener("click", ()=>{
+  //   const v = apiBaseInput.value.trim();
+  //   if(v){
+  //     apiBase = v.replace(/\/$/,"");
+  //     localStorage.setItem("tr_api_base", apiBase);
+  //     toast("API base URL saved");
+  //   }
+  //   settingsPopover.classList.remove("open");
+  // });
+  // document.addEventListener("click", (e)=>{
+  //   if(!settingsPopover.contains(e.target) && e.target.id !== "btn-settings" && !e.target.closest("#btn-settings")){
+  //     settingsPopover.classList.remove("open");
+  //   }
+  // });
 
   /* ---------------- init ---------------- */
   renderSessionList();
