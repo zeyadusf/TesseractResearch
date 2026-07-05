@@ -849,12 +849,9 @@
   "use strict";
 
   /* ---------------- config ---------------- */
-  const DEFAULT_API_BASE = window.location.origin.startsWith("http") && window.location.protocol !== "file:"
-    ? window.location.origin
-    : "tesseractresearch-production.up.railway.app";
-    // : "http://localhost:8000";
-  let apiBase = localStorage.getItem("tr_api_base") || DEFAULT_API_BASE;
-
+const DEFAULT_API_BASE = window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : "https://tesseractresearch-production.up.railway.app";
   /* ---------------- anonymous client id ----------------
      Persistent per-browser id, generated once with crypto.randomUUID()
      and stored in localStorage. Sent with every request (as a header and
