@@ -13,7 +13,7 @@ Give it a query. It plans, searches, waits for your sign-off, scrapes, analyzes,
 [![Redis](https://img.shields.io/badge/Redis-usage%20tracking-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Live Demo](#) · [Report Bug](https://github.com/zeyadusf/TesseractResearch/issues) · [Releases](https://github.com/zeyadusf/TesseractResearch/releases)
+[Live Demo](https://tesseractresearch.ziayd-usf.workers.dev) · [Report Bug](https://github.com/zeyadusf/TesseractResearch/issues) · [Releases](https://github.com/zeyadusf/TesseractResearch/releases)
 
 </div>
 
@@ -30,7 +30,7 @@ Give it a query. It plans, searches, waits for your sign-off, scrapes, analyzes,
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Project Structure](#project-structure)
-- [Roadmap](#roadmap)
+- [Deployment](#-deployment)
 - [Author](#author)
 
 ---
@@ -241,6 +241,31 @@ TesseractResearch/
 - [ ] Multi-session dashboard on the frontend
 - [ ] Expanded automated test coverage in CI (`tools-tests.yml`) -->
 
+
+## 🚀 Deployment
+
+TesseractResearch is deployed using a fully managed, free-tier-friendly stack:
+
+| Component        | Provider                | Notes                                                            |
+|-------------------|--------------------------|-------------------------------------------------------------------|
+| **Backend (API)** | [Railway](https://railway.app) | FastAPI + LangGraph agent, deployed via Dockerfile from this repo |
+| **Database**      | [Supabase](https://supabase.com) | Managed PostgreSQL, used for LangGraph checkpoints, research sessions, and reports |
+| **Cache / Rate-limiting** | [Upstash](https://upstash.com) | Serverless Redis for credit-zone tracking (green/yellow/red budget system) |
+| **Frontend**      | [Cloudflare Workers](https://developers.cloudflare.com/workers/) | Static single-file frontend, served via Workers static assets |
+
+### Architecture Notes
+
+- **Database connections**: Supabase's direct connection is IPv6-only and unreachable from Railway. The app connects through Supabase's **Session Pooler** (port `5432`) for both runtime and Alembic migrations, for IPv4 compatibility.
+- **Migrations**: Run manually via `alembic -c app/db/alembic.ini upgrade head` from the project root before each deploy that introduces schema changes.
+- **CORS**: The backend explicitly allows the Cloudflare Workers frontend origin in `app/api/main.py`.
+- **Frontend/backend split**: The frontend is a static file with no build step, deployed independently from the backend. It talks to the Railway-hosted API over HTTPS (not a relative path), configured via `DEFAULT_API_BASE` in `frontend/index.html`.
+
+### Environment Variables
+
+See `.env.example` for the full list. Key variables:
+- `POSTGRES_USERNAME`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DATABASE_NAME` — Supabase Session Pooler credentials
+- Redis connection string — Upstash (`rediss://` with TLS)
+- 
 ## Author
 
 **Zeyad El-Sayed Yousif**
