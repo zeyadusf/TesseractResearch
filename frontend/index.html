@@ -641,7 +641,7 @@
       </button> -->
       <div id="settings-popover">
         <label>Api base url</label>
-        <input type="text" id="api-base-input" placeholder="http://localhost:8000">
+        <input type="text" id="api-base-input" placeholder="tesseractresearch-production.up.railway.app">
         <button class="btn-primary" id="btn-save-api">Save</button>
         <div class="client-id-row">Client ID: <span id="client-id-display"></span></div>
       </div>
@@ -851,7 +851,8 @@
   /* ---------------- config ---------------- */
   const DEFAULT_API_BASE = window.location.origin.startsWith("http") && window.location.protocol !== "file:"
     ? window.location.origin
-    : "http://localhost:8000";
+    : "tesseractresearch-production.up.railway.app";
+    // : "http://localhost:8000";
   let apiBase = localStorage.getItem("tr_api_base") || DEFAULT_API_BASE;
 
   /* ---------------- anonymous client id ----------------
