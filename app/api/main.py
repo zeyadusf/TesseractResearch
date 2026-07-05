@@ -75,7 +75,9 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"] if settings.DEBUG else [],
+        allow_origins=["*"] if settings.DEBUG else ["http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "tesseractresearch.ziayd-usf.workers.dev",], 
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
